@@ -1,11 +1,12 @@
 package com.kiran.controller;
 
 import com.kiran.model.response.SlackResponse;
-import com.kiran.service.exception.BusinessRulesViolationException;
 import com.kiran.service.SlackService;
+import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
+import com.kiran.service.integration.WitAPI;
 import com.kiran.service.utilities.Utilities;
-import com.kiran.translator.UserInfoTranslator;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -32,14 +33,13 @@ public class SlackController {
     private Utilities utilities;
 
     @Autowired
-    private UserInfoTranslator userInfoTranslator;
-
-    @Autowired
     private SlackService slackService;
-
 
     @Autowired
     private JiraAPI jiraAPI;
+
+    @Autowired
+    private WitAPI witAPI;
 
     //Slack================================
 
@@ -63,7 +63,7 @@ public class SlackController {
                 SlackResponse response = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now look for Jira Ticket Info.");
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             }
-        } catch (BusinessRulesViolationException e) {
+        } catch (InvalidMove e) {
             SlackResponse response = new SlackResponse("Something went wrong. Please try again");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
@@ -108,7 +108,7 @@ public class SlackController {
                 SlackResponse response = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now Assign a Jira Ticket");
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             }
-        } catch (BusinessRulesViolationException e) {
+        } catch (InvalidMove e) {
             SlackResponse response = new SlackResponse("Something went wrong. Please try again");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
@@ -116,6 +116,21 @@ public class SlackController {
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
 
+    }
+
+
+    @RequestMapping(value = "/wit", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public HttpEntity<?> getIssueDetail(@RequestBody JSONObject object) {
+        try {
+
+            witAPI.understandMe("Whats the weather like in El Segundo?");
+            return new ResponseEntity<>("good", null, HttpStatus.OK);
+        } catch (InvalidMove e) {
+            return new ResponseEntity<>("good", null, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Please contact your administrator", null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
 
