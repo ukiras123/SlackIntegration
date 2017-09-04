@@ -2,6 +2,7 @@ package com.kiran.service.integration;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
@@ -16,22 +17,30 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class JiraAPI {
 
+    @Value("${jira.url}")
+    private String jiraUrl;
+    @Value("${jira.user}")
+    private String jiraUser;
+    @Value("${jira.pass}")
+    private String jiraPass;
+
+    private String getBasicAuth() {
+        String plainCreds = jiraUser+":"+jiraPass;
+        byte[] plainCredsBytes = plainCreds.getBytes();
+        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+        String base64Creds = new String(base64CredsBytes);
+        return base64Creds;
+    }
+
     public JSONObject getTicketDetail(String jiraTicket) throws InterruptedException {
-        String URL = "https://jira.oceanx.com/rest/api/latest/issue/"+jiraTicket+".json";
+        String URL = jiraUrl+jiraTicket+".json";
 
         try {
             RestTemplate restTemplate = new RestTemplate();
-            String plainCreds = "kgautam:Nepal123";
-            byte[] plainCredsBytes = plainCreds.getBytes();
-            byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-            String base64Creds = new String(base64CredsBytes);
-
             HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Basic " + base64Creds);
-
+            headers.add("Authorization", "Basic " + getBasicAuth());
             HttpEntity<String> request = new HttpEntity<String>(headers);
             ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.GET, request, String.class);
-
             JSONObject jObject  = new JSONObject(response);
             String strBody =   jObject.getString("body");
             JSONObject jBody  = new JSONObject(strBody);
@@ -44,17 +53,12 @@ public class JiraAPI {
 
 
     public String assignATicket(String jiraTicket, String asignee) throws InterruptedException {
-        String URL = "https://jira.oceanx.com/rest/api/latest/issue/"+jiraTicket+"/assignee";
+        String URL = jiraUrl+jiraTicket+"/assignee";
         try {
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            String plainCreds = "kgautam:Nepal123";
-            byte[] plainCredsBytes = plainCreds.getBytes();
-            byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-            String base64Creds = new String(base64CredsBytes);
-
             HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Basic " + base64Creds);
+            headers.add("Authorization", "Basic " + getBasicAuth());
             headers.setContentType(MediaType.APPLICATION_JSON);
             String input = "{\"name\":\"" + asignee + "\"}";
             HttpEntity<String> entity = new HttpEntity<String>(input, headers);

@@ -1,17 +1,13 @@
 package com.kiran.service;
 
-import com.kiran.service.exception.BusinessRulesViolationException;
+import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
-import com.kiran.service.validator.BusinessRuleViolation;
-import com.kiran.service.validator.UserInfoInputDataValidator;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * @author Kiran
@@ -22,9 +18,6 @@ public class SlackService {
 
     @Autowired
     private JiraAPI jiraAPI;
-
-    @Autowired
-    private UserInfoInputDataValidator inputDataValidator;
 
     public HashMap  getJiraResponse(String jiraTicket)
     {
@@ -40,12 +33,10 @@ public class SlackService {
             hmap.put("summary", summary);
             hmap.put("assignee", asignee);
             hmap.put("status", status);
-        } catch (BusinessRulesViolationException b) {
+        } catch (InvalidMove b) {
             throw b;
         }catch (Exception ex) {
-            Set<BusinessRuleViolation> violations = new HashSet<>();
-            violations.add(new BusinessRuleViolation("Internal Server Error. Please try again."));
-            throw new BusinessRulesViolationException(violations);
+            throw new InvalidMove(ex.getMessage());
         }
         return hmap;
     }
