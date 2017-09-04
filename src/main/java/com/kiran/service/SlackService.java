@@ -1,13 +1,20 @@
 package com.kiran.service;
 
+import com.kiran.controller.dto.Slack.SlackAttachment;
+import com.kiran.controller.dto.Slack.SlackAttachmentFields;
+import com.kiran.controller.dto.Slack.SlackResponseAttachment;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
+import com.kiran.service.integration.WitAPI;
+import com.kiran.service.integration.YelpAPI;
+import com.kiran.service.utilities.Utilities;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Kiran
@@ -18,6 +25,12 @@ public class SlackService {
 
     @Autowired
     private JiraAPI jiraAPI;
+
+    @Autowired
+    private WitAPI witAPI;
+
+    @Autowired
+    private YelpAPI yelpAPI;
 
     public HashMap  getJiraResponse(String jiraTicket)
     {
@@ -86,4 +99,45 @@ public class SlackService {
         }
         return asignee;
     }
+
+
+    public HashMap<Integer, HashMap<String, String>>  get_restaurant_list(String userInput)
+    {
+        String restaurant = "Best Restaurants";
+        String location = "";
+        try {
+            HashMap<String, String> entities = witAPI.understandMe(userInput);
+            if (!entities.containsKey(Utilities.WIT_ENTITIES.FOOD.getName()) && !entities.containsKey(Utilities.WIT_ENTITIES.RESTAURNT.getName())) {
+                //TODO : add some validation, may be throw some invalid Move error
+            } else {
+                if (entities.containsKey(Utilities.WIT_ENTITIES.FOOD.getName())) {
+                    restaurant = entities.get(Utilities.WIT_ENTITIES.FOOD.getName());
+                }
+            }
+
+            if (!entities.containsKey(Utilities.WIT_ENTITIES.LOCATION.getName())) {
+                throw new InvalidMove("Please input location.");
+            } else {
+                if (entities.containsKey(Utilities.WIT_ENTITIES.LOCATION.getName())) {
+                    location = entities.get(Utilities.WIT_ENTITIES.LOCATION.getName());
+                }
+            }
+            HashMap<Integer, HashMap<String, String>> restaurantsInfo = yelpAPI.findRestaurants(restaurant, location);
+            return restaurantsInfo;
+        } catch (Exception e) {
+            throw new InvalidMove("Something went wrong, please contact your administrator.");
+        }
+    }
+
+    public SlackResponseAttachment createSlackResponse(HashMap<Integer, HashMap<String, String>> restaurants) {
+        List<SlackAttachmentFields> fields = new LinkedList<>();
+        for (int i =0;i < restaurants.size();i++) {
+            fields.add(new SlackAttachmentFields("Name", restaurants.get(i).get("name").toString(),true));
+        }
+        List<SlackAttachment> slackAttachments = new LinkedList<>();
+        slackAttachments.add(new SlackAttachment("My Choice", restaurants.get(0).get("url").toString(), "Top 5 Restaurants", fields));
+        SlackResponseAttachment responseAttachment = new SlackResponseAttachment(null, slackAttachments);
+        return responseAttachment;
+    }
+
 }

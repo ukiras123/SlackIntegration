@@ -1,12 +1,13 @@
 package com.kiran.controller;
 
+import com.kiran.controller.dto.Slack.SlackResponseAttachment;
 import com.kiran.model.response.SlackResponse;
 import com.kiran.service.SlackService;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.integration.WitAPI;
+import com.kiran.service.integration.YelpAPI;
 import com.kiran.service.utilities.Utilities;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -39,8 +40,10 @@ public class SlackController {
     private JiraAPI jiraAPI;
 
     @Autowired
-    private WitAPI witAPI;
+    private YelpAPI yelpAPI;
 
+    @Autowired
+    private WitAPI witAPI;
     //Slack================================
 
     @RequestMapping(value = "/jira/issue", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
@@ -118,16 +121,22 @@ public class SlackController {
 
     }
 
-
-    @RequestMapping(value = "/wit", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE},
+    @RequestMapping(value = "/food", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
-    public HttpEntity<?> getIssueDetail(@RequestBody JSONObject object) {
+    public HttpEntity<?> getRestaurantsDetails(@RequestBody MultiValueMap<String, String> formVars) {
         try {
-
-            witAPI.understandMe("Whats the weather like in El Segundo?");
-            return new ResponseEntity<>("good", null, HttpStatus.OK);
+            String user_name = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            if (!text.isEmpty()) {
+                HashMap<Integer, HashMap<String, String>> restaurants = slackService.get_restaurant_list("Find me list of korean food in Inglewood");
+                SlackResponseAttachment slackResponseAttachment = slackService.createSlackResponse(restaurants);
+                return new ResponseEntity<>(slackResponseAttachment, null, HttpStatus.OK);
+            } else {
+                SlackResponse response = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now search restaurants.");
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
         } catch (InvalidMove e) {
-            return new ResponseEntity<>("good", null, HttpStatus.OK);
+            return new ResponseEntity<>(e.getError_message(), null, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Please contact your administrator", null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
