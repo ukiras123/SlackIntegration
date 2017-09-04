@@ -18,5 +18,25 @@ public class Utilities {
        return str.substring(trim_size, str.length()-trim_size);
     }
 
+    public enum WIT_ENTITIES {
+        FOOD("food"),
+        WEATHER("weather"),
+        RESTAURNT("restaurant"),
+        LOCATION("location"),
+        DATETIME("datetime"),
+        INTENT("intent");
 
+        private String name;
+        WIT_ENTITIES(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
 }
