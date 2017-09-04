@@ -24,4 +24,13 @@ nbdist/
 .nb-gradle/
 
 #Spring
-application.properties
+*.properties
+
+src/main/resources/application.properties
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
