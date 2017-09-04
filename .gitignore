@@ -24,7 +24,7 @@ nbdist/
 .nb-gradle/
 
 #Spring
-*.properties
+application.properties
 
 
 # Mac
