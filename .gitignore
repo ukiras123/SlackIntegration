@@ -26,7 +26,6 @@ nbdist/
 #Spring
 *.properties
 
-src/main/resources/application.properties
 
 # Mac
 .DS_Store
