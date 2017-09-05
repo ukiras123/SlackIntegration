@@ -47,10 +47,12 @@ public class WitAPI {
 
     private void getEntities(JSONObject jsonObj, HashMap<String,String> entities) throws InterruptedException {
         try {
-        JSONObject jsonEntities = null;
-        if (jsonObj.getJSONObject("entities").length() != 0) {
-            jsonEntities = jsonObj.getJSONObject("entities");
-        }
+            JSONObject jsonEntities = null;
+            if (jsonObj.getJSONObject("entities").length() != 0) {
+                jsonEntities = jsonObj.getJSONObject("entities");
+            } else {
+                throw new InvalidMove("I need location to find the restaurants.");
+            }
             for (int i = 0; i < jsonEntities.length();i++) {
                 String entityname = jsonEntities.names().get(i).toString();
                 JSONArray ja = jsonEntities.getJSONArray(entityname);

@@ -1,6 +1,6 @@
 package com.kiran.controller.dto.Slack;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Kiran
@@ -10,7 +10,7 @@ public class SlackAttachmentFields {
     private String title;
     private String value;
 
-    @SerializedName("short")
+    @JsonProperty(value = "short")
     private boolean isShort;
 
 

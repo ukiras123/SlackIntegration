@@ -107,35 +107,35 @@ public class SlackService {
         String location = "";
         try {
             HashMap<String, String> entities = witAPI.understandMe(userInput);
-            if (!entities.containsKey(Utilities.WIT_ENTITIES.FOOD.getName()) && !entities.containsKey(Utilities.WIT_ENTITIES.RESTAURNT.getName())) {
-                //TODO : add some validation, may be throw some invalid Move error
-            } else {
-                if (entities.containsKey(Utilities.WIT_ENTITIES.FOOD.getName())) {
-                    restaurant = entities.get(Utilities.WIT_ENTITIES.FOOD.getName());
-                }
+            if (!entities.containsKey(Utilities.WIT_ENTITIES.FOOD.getName()) && !entities.containsKey(Utilities.WIT_ENTITIES.LOCATION.getName())) {
+                throw new InvalidMove("*At least input location.*");
+            }
+
+            if (entities.containsKey(Utilities.WIT_ENTITIES.FOOD.getName())) {
+                restaurant = entities.get(Utilities.WIT_ENTITIES.FOOD.getName());
             }
 
             if (!entities.containsKey(Utilities.WIT_ENTITIES.LOCATION.getName())) {
-                throw new InvalidMove("Please input location.");
+                throw new InvalidMove("*I need location to find the restaurants. Please try again.*");
             } else {
-                if (entities.containsKey(Utilities.WIT_ENTITIES.LOCATION.getName())) {
                     location = entities.get(Utilities.WIT_ENTITIES.LOCATION.getName());
-                }
             }
             HashMap<Integer, HashMap<String, String>> restaurantsInfo = yelpAPI.findRestaurants(restaurant, location);
             return restaurantsInfo;
-        } catch (Exception e) {
-            throw new InvalidMove("Something went wrong, please contact your administrator.");
+        } catch (InvalidMove e) {
+            throw new InvalidMove(e.getError_message());
+        }catch (Exception e) {
+            throw new InvalidMove("*I didn't understand what you said. Please try again.*");
         }
     }
 
     public SlackResponseAttachment createSlackResponse(HashMap<Integer, HashMap<String, String>> restaurants) {
         List<SlackAttachmentFields> fields = new LinkedList<>();
         for (int i =0;i < restaurants.size();i++) {
-            fields.add(new SlackAttachmentFields("Name", restaurants.get(i).get("name").toString(),true));
+            fields.add(new SlackAttachmentFields(restaurants.get(i).get("name").toString(), restaurants.get(i).get("rating").toString()+ " Stars, "+restaurants.get(i).get("review").toString()+" Ratings, "+restaurants.get(i).get("distance").toString()+" miles away",true));
         }
         List<SlackAttachment> slackAttachments = new LinkedList<>();
-        slackAttachments.add(new SlackAttachment("My 1st Choice", restaurants.get(0).get("url").toString(), "Top 5 Restaurants", fields));
+        slackAttachments.add(new SlackAttachment("If you are interested in my choice", restaurants.get(0).get("url").toString(), "Top 5 Restaurants around "+restaurants.get(0).get("location").toString(),  restaurants.get(0).get("image_url").toString(), fields));
         SlackResponseAttachment responseAttachment = new SlackResponseAttachment(null, slackAttachments);
         return responseAttachment;
     }
