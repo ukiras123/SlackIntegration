@@ -122,42 +122,38 @@ public class SlackController {
 
     @RequestMapping(value = "/food", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
-    public HttpEntity<?> getRestaurantsDetails(@RequestBody MultiValueMap<String, String> formVars) {
+    public HttpEntity<?> getRestaurantsDetails(@RequestBody MultiValueMap<String, String> formVars) throws InterruptedException{
         String user_name = utilities.trimString(formVars.get("user_name").toString(), 1);
         String text = utilities.trimString(formVars.get("text").toString(), 1);
         String responseUrl = utilities.trimString(formVars.get("response_url").toString(), 1);
         try {
-            SlackResponse responseOk = new SlackResponse("Searching...");
+            SlackResponse responseOk = new SlackResponse(null);
             return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
         } finally {
-            HashMap<Integer, HashMap<String, String>> restaurants = slackService.get_restaurant_list(text);
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             if (!text.isEmpty()) {
                 try {
+                    HashMap<Integer, HashMap<String, String>> restaurants = slackService.get_restaurant_list(text);
                     SlackResponseAttachment slackResponseAttachment = slackService.createSlackResponse(restaurants);
                     HttpEntity<SlackResponseAttachment> entity = new HttpEntity<SlackResponseAttachment>(slackResponseAttachment, headers);
-
-                    ResponseEntity<String> response = restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
-                    HttpStatus code = response.getStatusCode();
+                    restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
                 } catch (InvalidMove e) {
-                    SlackResponse responseSlack = new SlackResponse(e.getError_message());
+                    String errorMessage = e.getError_message();
+                    SlackResponse responseSlack = new SlackResponse(errorMessage);
                     HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
-                    ResponseEntity<String> response = restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
-                    HttpStatus code = response.getStatusCode();
+                    restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
                 } catch (Exception e) {
                     SlackResponse responseSlack = new SlackResponse("Please contact your administrator");
                     HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
-                    ResponseEntity<String> response = restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
-                    HttpStatus code = response.getStatusCode();
+                    restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
                 }
             } else {
                 SlackResponse responseSlack = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now search restaurants.");
                 HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
-                ResponseEntity<String> response = restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
-                HttpStatus code = response.getStatusCode();
+                restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
             }
         }
     }

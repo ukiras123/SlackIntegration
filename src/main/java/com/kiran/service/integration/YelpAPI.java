@@ -50,6 +50,9 @@ public class YelpAPI {
                 oneRestaurantInfo.put("name", jArray.getJSONObject(i).getString("name"));
                 oneRestaurantInfo.put("url", jArray.getJSONObject(i).getString("url"));
                 oneRestaurantInfo.put("review", Integer.toString(jArray.getJSONObject(i).getInt("review_count")));
+                oneRestaurantInfo.put("rating", Integer.toString(jArray.getJSONObject(i).getInt("rating")));
+                oneRestaurantInfo.put("image_url", jArray.getJSONObject(i).getString("image_url"));
+                oneRestaurantInfo.put("location", jArray.getJSONObject(i).getJSONObject("location").getString("city"));
                 long distanceMeter = jArray.getJSONObject(i).getLong("distance");
                 double inches = (39.370078 * distanceMeter);
                 double miles = (inches / 63360.00);
