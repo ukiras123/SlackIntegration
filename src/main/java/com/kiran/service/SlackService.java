@@ -10,7 +10,7 @@ import com.kiran.service.integration.YelpAPI;
 import com.kiran.service.utilities.Utilities;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -20,7 +20,8 @@ import java.util.List;
  * @author Kiran
  * @since 8/31/17
  */
-@Component
+
+@Service
 public class SlackService {
 
     @Autowired
