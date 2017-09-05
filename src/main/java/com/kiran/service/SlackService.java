@@ -135,7 +135,7 @@ public class SlackService {
             fields.add(new SlackAttachmentFields("Name", restaurants.get(i).get("name").toString(),true));
         }
         List<SlackAttachment> slackAttachments = new LinkedList<>();
-        slackAttachments.add(new SlackAttachment("My Choice", restaurants.get(0).get("url").toString(), "Top 5 Restaurants", fields));
+        slackAttachments.add(new SlackAttachment("My 1st Choice", restaurants.get(0).get("url").toString(), "Top 5 Restaurants", fields));
         SlackResponseAttachment responseAttachment = new SlackResponseAttachment(null, slackAttachments);
         return responseAttachment;
     }

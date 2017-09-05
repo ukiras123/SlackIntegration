@@ -9,15 +9,14 @@ import com.kiran.service.integration.WitAPI;
 import com.kiran.service.integration.YelpAPI;
 import com.kiran.service.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 
@@ -94,7 +93,7 @@ public class SlackController {
                 }
                 String passed = jiraAPI.assignATicket(jiraTicket, assigneeName);
                 if (passed.equals("passed")) {
-                    SlackResponse response = new SlackResponse("Ticket: *" + jiraTicket + "* is assigned to *"+assigneeName+"*");
+                    SlackResponse response = new SlackResponse("Ticket: *" + jiraTicket + "* is assigned to *" + assigneeName + "*");
                     return new ResponseEntity<>(response, null, HttpStatus.OK);
                 } else if (passed.equals("userIssue")) {
                     SlackResponse response = new SlackResponse("User: *" + assigneeName + "* does not exist.");
@@ -102,7 +101,7 @@ public class SlackController {
                 } else if (passed.equals("jiraTicket")) {
                     SlackResponse response = new SlackResponse("Jira Ticket is invalid");
                     return new ResponseEntity<>(response, null, HttpStatus.OK);
-                }else {
+                } else {
                     SlackResponse response = new SlackResponse("Something went wrong. Please try again.");
                     return new ResponseEntity<>(response, null, HttpStatus.OK);
                 }
@@ -124,21 +123,42 @@ public class SlackController {
     @RequestMapping(value = "/food", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public HttpEntity<?> getRestaurantsDetails(@RequestBody MultiValueMap<String, String> formVars) {
+        String user_name = utilities.trimString(formVars.get("user_name").toString(), 1);
+        String text = utilities.trimString(formVars.get("text").toString(), 1);
+        String responseUrl = utilities.trimString(formVars.get("response_url").toString(), 1);
         try {
-            String user_name = utilities.trimString(formVars.get("user_name").toString(), 1);
-            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            SlackResponse responseOk = new SlackResponse("Searching...");
+            return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
+        } finally {
+            HashMap<Integer, HashMap<String, String>> restaurants = slackService.get_restaurant_list(text);
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
             if (!text.isEmpty()) {
-                HashMap<Integer, HashMap<String, String>> restaurants = slackService.get_restaurant_list("Find me list of korean food in Inglewood");
-                SlackResponseAttachment slackResponseAttachment = slackService.createSlackResponse(restaurants);
-                return new ResponseEntity<>(slackResponseAttachment, null, HttpStatus.OK);
+                try {
+                    SlackResponseAttachment slackResponseAttachment = slackService.createSlackResponse(restaurants);
+                    HttpEntity<SlackResponseAttachment> entity = new HttpEntity<SlackResponseAttachment>(slackResponseAttachment, headers);
+
+                    ResponseEntity<String> response = restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
+                    HttpStatus code = response.getStatusCode();
+                } catch (InvalidMove e) {
+                    SlackResponse responseSlack = new SlackResponse(e.getError_message());
+                    HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
+                    ResponseEntity<String> response = restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
+                    HttpStatus code = response.getStatusCode();
+                } catch (Exception e) {
+                    SlackResponse responseSlack = new SlackResponse("Please contact your administrator");
+                    HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
+                    ResponseEntity<String> response = restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
+                    HttpStatus code = response.getStatusCode();
+                }
             } else {
-                SlackResponse response = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now search restaurants.");
-                return new ResponseEntity<>(response, null, HttpStatus.OK);
+                SlackResponse responseSlack = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now search restaurants.");
+                HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
+                ResponseEntity<String> response = restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
+                HttpStatus code = response.getStatusCode();
             }
-        } catch (InvalidMove e) {
-            return new ResponseEntity<>(e.getError_message(), null, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Please contact your administrator", null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
