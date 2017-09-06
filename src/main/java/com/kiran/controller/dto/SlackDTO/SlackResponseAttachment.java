@@ -1,4 +1,4 @@
-package com.kiran.controller.dto.Slack;
+package com.kiran.controller.dto.SlackDTO;
 
 
 import java.util.List;

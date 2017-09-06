@@ -1,8 +1,8 @@
 package com.kiran.service;
 
-import com.kiran.controller.dto.Slack.SlackAttachment;
-import com.kiran.controller.dto.Slack.SlackAttachmentFields;
-import com.kiran.controller.dto.Slack.SlackResponseAttachment;
+import com.kiran.controller.dto.SlackDTO.SlackAttachment;
+import com.kiran.controller.dto.SlackDTO.SlackAttachmentFields;
+import com.kiran.controller.dto.SlackDTO.SlackResponseAttachment;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.integration.WitAPI;
