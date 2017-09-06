@@ -2,10 +2,10 @@ package com.kiran.controller;
 
 import com.kiran.model.response.SlackResponse;
 import com.kiran.service.SlackService;
+import com.kiran.service.UserLogService;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.integration.WitAPI;
-import com.kiran.service.integration.YelpAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class SlackController {
     private JiraAPI jiraAPI;
 
     @Autowired
-    private YelpAPI yelpAPI;
+    private UserLogService userLogService;
 
     @Autowired
     private SlackAsyncService slackAsyncService;
@@ -53,8 +53,9 @@ public class SlackController {
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public HttpEntity<?> getIssueDetail(@RequestBody MultiValueMap<String, String> formVars) {
         try {
-            String user_name = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(userName,text);
             if (!text.isEmpty()) {
                 String jiraTicket = slackService.getJiraCode(text);
                 if (jiraTicket == null) {
@@ -65,8 +66,9 @@ public class SlackController {
                 jiraMap = slackService.getJiraResponse(jiraTicket);
                 SlackResponse response = new SlackResponse("*Ticket* : " + jiraTicket + "\n*Summary* : " + jiraMap.get("summary") + "\n*Assignee* : " + jiraMap.get("assignee") + "\n*Status* : " + jiraMap.get("status"));
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
+
             } else {
-                SlackResponse response = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now look for Jira Ticket Info.");
+                SlackResponse response = new SlackResponse("Welcome, " + userName.substring(0, 1).toUpperCase() + userName.substring(1) + ". You can now look for Jira Ticket Info.");
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             }
         } catch (InvalidMove e) {
@@ -82,8 +84,9 @@ public class SlackController {
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public HttpEntity<?> assignTicket(@RequestBody MultiValueMap<String, String> formVars) {
         try {
-            String user_name = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(userName,text);
             if (!text.isEmpty()) {
                 String jiraTicket = slackService.getJiraCode(text);
                 String assigneeName = slackService.getAssigneeName(text);
@@ -111,7 +114,7 @@ public class SlackController {
                 }
 
             } else {
-                SlackResponse response = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now Assign a Jira Ticket");
+                SlackResponse response = new SlackResponse("Welcome, " + userName.substring(0, 1).toUpperCase() + userName.substring(1) + ". You can now Assign a Jira Ticket");
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             }
         } catch (InvalidMove e) {
@@ -127,12 +130,13 @@ public class SlackController {
     @RequestMapping(value = "/food", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public HttpEntity<?> getRestaurantsDetails(@RequestBody MultiValueMap<String, String> formVars) throws InterruptedException{
-        String user_name = utilities.trimString(formVars.get("user_name").toString(), 1);
+        String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
         String text = utilities.trimString(formVars.get("text").toString(), 1);
         String responseUrl = utilities.trimString(formVars.get("response_url").toString(), 1);
         try {
             SlackResponse responseOk = new SlackResponse("Searching...");
-            slackAsyncService.postMessage(user_name,text,responseUrl);
+            slackAsyncService.logInDB(userName,text);
+            slackAsyncService.postMessage(userName,text,responseUrl);
             return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
         } catch (Exception e) {
             SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator.");
