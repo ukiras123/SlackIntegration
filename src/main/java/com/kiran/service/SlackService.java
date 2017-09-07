@@ -57,26 +57,11 @@ public class SlackService {
 
     public String getJiraCode(String str) {
         String part[] = str.split(" ");
-        LinkedList<String> mayBeJira = new LinkedList<>();
         String jiraTicket = null;
         for (String st : part) {
-            if (st.length()==9 || st.length()==10 || st.length()==11)
+            if (st.contains("-"))
             {
-                mayBeJira.add(st);
-            }
-        }
-        for (int i = 0; i < mayBeJira.size(); i++) {
-            if (mayBeJira.get(i).contains("-") && mayBeJira.get(i).length() == 9) {
-                jiraTicket = mayBeJira.get(i);
-                break;
-            } else if (mayBeJira.get(i).contains("-") && mayBeJira.get(i).length() == 10) {
-                String st = mayBeJira.get(i);
-                jiraTicket = st.substring(0, st.length() - 1);
-                break;
-            } else if (mayBeJira.get(i).contains("-") && mayBeJira.get(i).length() == 11) {
-                String st = mayBeJira.get(i);
-                jiraTicket = st.substring(0, st.length() - 2);
-                break;
+                jiraTicket = st;
             }
         }
         return jiraTicket;
