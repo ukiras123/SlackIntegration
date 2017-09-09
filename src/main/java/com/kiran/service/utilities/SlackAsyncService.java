@@ -1,8 +1,10 @@
 package com.kiran.service.utilities;
 
-import com.kiran.controller.dto.Slack.SlackResponseAttachment;
+import com.kiran.controller.dto.SlackDTO.SlackResponseAttachment;
+import com.kiran.controller.dto.UserLogDTO.UserLogDTO;
 import com.kiran.model.response.SlackResponse;
 import com.kiran.service.SlackService;
+import com.kiran.service.UserLogService;
 import com.kiran.service.exception.InvalidMove;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -14,6 +16,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -27,8 +32,11 @@ public class SlackAsyncService {
     @Autowired
     private SlackService slackService;
 
+    @Autowired
+    private UserLogService userLogService;
+
     @Async
-    public void postMessage(String user_name, String text, String responseUrl) {
+    public void postMessage(String userName, String text, String responseUrl) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
         HttpHeaders headers = new HttpHeaders();
@@ -50,9 +58,18 @@ public class SlackAsyncService {
                 restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
             }
         } else {
-            SlackResponse responseSlack = new SlackResponse("Welcome, " + user_name.substring(0, 1).toUpperCase() + user_name.substring(1) + ". You can now search restaurants.");
+            SlackResponse responseSlack = new SlackResponse("Welcome, " + userName.substring(0, 1).toUpperCase() + userName.substring(1) + ". You can now search restaurants.");
             HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
             restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
         }
+    }
+
+    @Async
+    public void logInDB(String userName, String text) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        String timeStamp = dateFormat.format(date);
+        UserLogDTO userLogDTO = new UserLogDTO(userName,timeStamp,text);
+        userLogService.createUserLog(userLogDTO);
     }
 }
