@@ -32,7 +32,7 @@ public class HeaderRequestInterceptor implements HandlerInterceptor {
         if (!accept.equalsIgnoreCase("*/*") && !StringUtils.isBlank(accept)) {
             if (!accept.equalsIgnoreCase("application/json")) {
                 String acceptError = "{\"error\" : \"Only application/json accpeted.\"}";
-                response.setStatus(500);
+                response.setStatus(415);
                 response.getWriter().write(acceptError);
                 return false;
             }
