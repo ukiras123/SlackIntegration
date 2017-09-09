@@ -12,6 +12,5 @@ public class UserInfoApplication {
 
 	public static void main(String[] args) {
 		ApplicationContext appCtx  = SpringApplication.run(UserInfoApplication.class, args);
-		ClientDataHolder.setApplicationContext(appCtx);
 	}
 }
