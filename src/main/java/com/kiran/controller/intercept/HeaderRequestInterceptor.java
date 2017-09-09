@@ -29,7 +29,7 @@ public class HeaderRequestInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String accept = request.getHeader("Accept");
 
-        if (!accept.equalsIgnoreCase("*/*") && !StringUtils.isBlank(accept)) {
+        if (!accept.contains("*/*") && !StringUtils.isBlank(accept)) {
             if (!accept.equalsIgnoreCase("application/json")) {
                 String acceptError = "{\"error\" : \"Only application/json accpeted.\"}";
                 response.setStatus(415);
