@@ -31,7 +31,7 @@ public class HeaderRequestInterceptor implements HandlerInterceptor {
 
         if (!accept.contains("*/*") && !StringUtils.isBlank(accept)) {
             if (!accept.equalsIgnoreCase("application/json")) {
-                String acceptError = "{\"error\" : \"Only application/json accpeted.\"}";
+                String acceptError = "{\"error\" : \"Only application/json accpeted in header.\"}";
                 response.setStatus(415);
                 response.getWriter().write(acceptError);
                 return false;
