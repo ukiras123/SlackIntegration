@@ -9,6 +9,8 @@ import com.kiran.service.integration.WitAPI;
 import com.kiran.service.integration.YelpAPI;
 import com.kiran.service.utilities.Utilities;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,8 @@ import java.util.List;
 
 @Service
 public class SlackService {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private JiraAPI jiraAPI;
@@ -50,6 +54,7 @@ public class SlackService {
         } catch (InvalidMove b) {
             throw b;
         }catch (Exception ex) {
+            this.logger.error("Exception during getJiraResponse(). ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
             throw new InvalidMove(ex.getMessage());
         }
         return hmap;
@@ -110,7 +115,8 @@ public class SlackService {
             return restaurantsInfo;
         } catch (InvalidMove e) {
             throw new InvalidMove(e.getError_message());
-        }catch (Exception e) {
+        }catch (Exception ex) {
+            this.logger.error("Exception during get_restaurant_list. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
             throw new InvalidMove("*I didn't understand what you said. Please try again.*");
         }
     }

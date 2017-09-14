@@ -2,6 +2,8 @@ package com.kiran.service.integration;
 
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -16,6 +18,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 public class JiraAPI {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${jira.url}")
     private String jiraUrl;
@@ -46,7 +50,7 @@ public class JiraAPI {
             JSONObject jBody  = new JSONObject(strBody);
             return jBody;
         } catch (Exception ex) {
-            System.out.println("** exception: " + ex.getMessage());
+            this.logger.error("Exception during Jira API call. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
         }
         return null;
     }
@@ -81,7 +85,8 @@ public class JiraAPI {
                 return "failed";
             }
         } catch (Exception ex) {
-                return "failed";
+            this.logger.error("Exception during Jira API , assign ticker. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
+            return "failed";
         }
     }
 
