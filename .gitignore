@@ -31,4 +31,4 @@ application.properties
 
 # Maven
 log/
-target/*
+target/*/
