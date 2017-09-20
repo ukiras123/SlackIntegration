@@ -26,9 +26,6 @@ import java.util.List;
 public class UserLogController {
 
     @Autowired
-    private UserLogService userLogService;
-
-    @Autowired
     private UserLogTranslator userLogTranslator;
 
     //Read user by userName
