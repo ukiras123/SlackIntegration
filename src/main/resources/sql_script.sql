@@ -9,3 +9,17 @@ CREATE TABLE user_log (
   time_stamp varchar(100) NOT NULL,
   info varchar(100) NOT NULL
 );
+
+
+USE users;
+
+CREATE TABLE user_sign_up (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_name varchar(100) NOT NULL,
+  first_name varchar(100) NOT NULL,
+  last_name varchar(100) NOT NULL,
+  email varchar(100) NOT NULL,
+  pass varchar(100) NOT NULL,
+  jira_user varchar(100),
+  jira_pass varchar(100)
+  );
