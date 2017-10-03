@@ -3,6 +3,8 @@ package com.kiran.service.integration;
 import com.kiran.service.exception.InvalidMove;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +23,8 @@ import java.util.HashMap;
 
 @Component
 public class YelpAPI {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${yelp.search.url}")
     private String yelpSearchURL;
@@ -61,6 +65,7 @@ public class YelpAPI {
             }
             return restaurantsInfo;
         } catch (Exception ex) {
+            this.logger.error("Exception during Yelp API call. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
             throw new InvalidMove("Something went wrong, please contact your administrator.");
         }
     }

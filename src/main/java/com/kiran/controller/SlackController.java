@@ -8,6 +8,8 @@ import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.integration.WitAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -47,11 +49,26 @@ public class SlackController {
 
     @Autowired
     private WitAPI witAPI;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    // Health Check
+    @RequestMapping(method = RequestMethod.GET)
+    public String healthCheck() {
+        return "<marquee behavior=\"alternate\" scrollamount=\"5\">I...</marquee>\n" +
+                "<marquee behavior=\"alternate\" scrollamount=\"6\">AM...</marquee>\n" +
+                "<marquee behavior=\"alternate\" scrollamount=\"7\">WORKING...</marquee>\n" +
+                "<marquee behavior=\"alternate\" scrollamount=\"8\">FINE!</marquee>\n" +
+                "\n";
+    }
+
+
     //Slack================================
 
     @RequestMapping(value = "/jira/issue", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public HttpEntity<?> getIssueDetail(@RequestBody MultiValueMap<String, String> formVars) {
+        logger.info("Inside /jira/issue controller------------------------------------");
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
@@ -76,6 +93,8 @@ public class SlackController {
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Please contact your administrator", null, HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            logger.info("Exiting /jira/issue controller------------------------------------");
         }
     }
 
@@ -83,10 +102,11 @@ public class SlackController {
     @RequestMapping(value = "/jira/assignee", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public HttpEntity<?> assignTicket(@RequestBody MultiValueMap<String, String> formVars) {
+        logger.info("Inside /jira/assignee controller------------------------------------");
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
-            slackAsyncService.logInDB(userName,text);
+            slackAsyncService.logInDB(userName, text);
             if (!text.isEmpty()) {
                 String jiraTicket = slackService.getJiraCode(text);
                 String assigneeName = slackService.getAssigneeName(text);
@@ -123,24 +143,25 @@ public class SlackController {
         } catch (Exception e) {
             SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator.");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } finally {
+            logger.info("Exiting /jira/assignee controller------------------------------------");
         }
-
     }
 
     @RequestMapping(value = "/food", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public HttpEntity<?> getRestaurantsDetails(@RequestBody MultiValueMap<String, String> formVars) throws InterruptedException{
-        String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
-        String text = utilities.trimString(formVars.get("text").toString(), 1);
-        String responseUrl = utilities.trimString(formVars.get("response_url").toString(), 1);
+        logger.info("Inside /food controller------------------------------------");
         try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            String responseUrl = utilities.trimString(formVars.get("response_url").toString(), 1);
             SlackResponse responseOk = new SlackResponse("Searching...");
-            slackAsyncService.logInDB(userName,text);
-            slackAsyncService.postMessage(userName,text,responseUrl);
+            slackAsyncService.logInDB(userName, text);
+            slackAsyncService.postMessage(userName, text, responseUrl);
             return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
-        } catch (Exception e) {
-            SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator.");
-            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } finally{
+            logger.info("Exiting /food controller------------------------------------");
         }
     }
 }

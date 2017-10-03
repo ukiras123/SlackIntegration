@@ -3,6 +3,8 @@ package com.kiran.service.integration;
 import com.kiran.service.exception.InvalidMove;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +22,8 @@ import java.util.HashMap;
 
 @Component
 public class WitAPI {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${wit.url}")
     private String witUrl;
@@ -41,6 +45,7 @@ public class WitAPI {
             getEntities(jObject, entities);
             return entities;
         } catch (Exception ex) {
+            this.logger.error("Exception during WIT API call. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
             throw new InvalidMove("I didn't understand you.");
         }
     }
@@ -59,6 +64,7 @@ public class WitAPI {
                 entities.put(entityname, ja.getJSONObject(0).getString("value"));
             }
         } catch (Exception ex) {
+            this.logger.error("Exception during WIT API call, getting entities. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
             throw new InvalidMove("I didn't understand you.");
         }
     }
