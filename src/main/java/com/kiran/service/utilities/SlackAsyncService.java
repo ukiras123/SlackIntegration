@@ -6,6 +6,7 @@ import com.kiran.model.response.SlackResponse;
 import com.kiran.service.SlackService;
 import com.kiran.service.UserLogService;
 import com.kiran.service.exception.InvalidMove;
+import com.kiran.service.regressionTest.RegressionTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +35,33 @@ public class SlackAsyncService {
 
     @Autowired
     private UserLogService userLogService;
+
+    @Autowired
+    private RegressionTest regressionTest;
+
+    @Async
+    public void regresionTestResponse(String apiName, String email, String responseUrl) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (!apiName.isEmpty()) {
+            try {
+                String reportUrl = regressionTest.doRegression(apiName, email);
+                SlackResponse responseSlack = new SlackResponse("Test Completed. I have sent a report to your email. "+ reportUrl);
+                HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
+                restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
+            }catch (Exception e) {
+                SlackResponse responseSlack = new SlackResponse("Please contact your administrator");
+                HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
+                restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
+            }
+        } else {
+            SlackResponse responseSlack = new SlackResponse("Welcome. You can now run regression test from right here.");
+            HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
+            restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);
+        }
+    }
 
     @Async
     public void postMessage(String userName, String text, String responseUrl) {
