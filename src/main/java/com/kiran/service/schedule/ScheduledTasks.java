@@ -27,7 +27,7 @@ public class ScheduledTasks {
     @Scheduled(cron = "0 0 17 * * *")
     public void reportCurrentTime() {
         log.info("The time is now {}", dateFormat.format(new Date()));
-        slackAPI.sendMessage("Greetings. Please don't forget to log hours. :)", "Reminder");
+        //slackAPI.sendMessage("Greetings. Please don't forget to log hours. :)", "Reminder");
     }
 
 }

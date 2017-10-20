@@ -40,14 +40,14 @@ public class SlackAsyncService {
     private RegressionTest regressionTest;
 
     @Async
-    public void regresionTestResponse(String apiName, String email, String responseUrl) {
+    public void regresionTestResponse(String apiName, String branch, String email, String responseUrl) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         if (!apiName.isEmpty()) {
             try {
-                String reportUrl = regressionTest.doRegression(apiName, email);
+                String reportUrl = regressionTest.doRegression(apiName, branch, email);
                 SlackResponse responseSlack = new SlackResponse("Test Completed. I have sent a report to your email. "+ reportUrl);
                 HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
                 restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);

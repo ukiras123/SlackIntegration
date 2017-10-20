@@ -177,8 +177,9 @@ public class SlackController {
             String text = utilities.trimString(formVars.get("text").toString(), 1);
             String[] splited = text.split("\\s+");
             String responseUrl = utilities.trimString(formVars.get("response_url").toString(), 1);
-            SlackResponse responseOk = new SlackResponse("Running Regression on for " + splited[0] + "......");
-            slackAsyncService.regresionTestResponse(splited[0],splited[1], responseUrl);
+            SlackResponse responseOk = new SlackResponse("Testing " + splited[0] + "...... Branch: " + splited[1]);
+            slackAsyncService.logInDB(userName, text);
+            slackAsyncService.regresionTestResponse(splited[0], splited[1], splited[2], responseUrl);
             return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
