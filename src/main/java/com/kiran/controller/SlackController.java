@@ -2,10 +2,8 @@ package com.kiran.controller;
 
 import com.kiran.model.response.SlackResponse;
 import com.kiran.service.SlackService;
-import com.kiran.service.UserLogService;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
-import com.kiran.service.integration.WitAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
 import org.slf4j.Logger;
@@ -42,15 +40,9 @@ public class SlackController {
     private JiraAPI jiraAPI;
 
 
-
-    @Autowired
-    private UserLogService userLogService;
-
     @Autowired
     private SlackAsyncService slackAsyncService;
 
-    @Autowired
-    private WitAPI witAPI;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -179,7 +171,7 @@ public class SlackController {
             String responseUrl = utilities.trimString(formVars.get("response_url").toString(), 1);
             SlackResponse responseOk = new SlackResponse("Testing " + splited[0] + "...... Branch: " + splited[1]);
             slackAsyncService.logInDB(userName, text);
-            slackAsyncService.regresionTestResponse(splited[0], splited[1], splited[2], responseUrl);
+            slackAsyncService.regressionTestResponse(splited[0], splited[1], splited[2], responseUrl);
             return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -189,6 +181,7 @@ public class SlackController {
             logger.info("Exiting /regression controller------------------------------------");
         }
     }
+
 
 }
 

@@ -40,7 +40,7 @@ public class SlackAsyncService {
     private RegressionTest regressionTest;
 
     @Async
-    public void regresionTestResponse(String apiName, String branch, String email, String responseUrl) {
+    public void regressionTestResponse(String apiName, String branch, String email, String responseUrl) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
         HttpHeaders headers = new HttpHeaders();
