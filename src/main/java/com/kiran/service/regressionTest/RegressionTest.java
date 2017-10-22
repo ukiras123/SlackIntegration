@@ -56,6 +56,13 @@ public class RegressionTest {
         InputStream is = process.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
+        String line;
+
+        StringBuilder out = new StringBuilder();
+        while ((line = br.readLine()) != null) {
+            out.append(line);
+        }
+        log.info(out.toString());
 
         //Wait to get exit value
         try {
