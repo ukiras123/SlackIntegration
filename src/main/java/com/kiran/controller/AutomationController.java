@@ -36,7 +36,8 @@ public class AutomationController {
     public HttpEntity<?> runAutomation(@RequestBody SlateUIDTO slateUIDTO) throws InterruptedException {
         logger.info("Inside /automation controller------------------------------------");
         try {
-            String report = regressionTest.doRegression(slateUIDTO.getApiName(), slateUIDTO.getBranch(), slateUIDTO.getEmail());
+            logger.info(slateUIDTO.toString());
+            String report = regressionTest.doRegression(slateUIDTO.getApiName(), slateUIDTO.getBranch(), slateUIDTO.getEmail(), slateUIDTO.getAutomationLevel());
             SlackResponse responseOk = new SlackResponse(report);
             return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
         } catch (InvalidMove e) {

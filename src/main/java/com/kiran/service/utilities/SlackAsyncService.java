@@ -47,7 +47,7 @@ public class SlackAsyncService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         if (!apiName.isEmpty()) {
             try {
-                String reportUrl = regressionTest.doRegression(apiName, branch, email);
+                String reportUrl = regressionTest.doRegression(apiName, branch, email, "regression");
                 SlackResponse responseSlack = new SlackResponse("Test Completed. I have sent a report to your email. "+ reportUrl);
                 HttpEntity<SlackResponse> entity = new HttpEntity<SlackResponse>(responseSlack, headers);
                 restTemplate.exchange(responseUrl, HttpMethod.POST, entity, String.class);

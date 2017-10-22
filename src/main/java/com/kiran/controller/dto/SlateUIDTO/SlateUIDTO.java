@@ -52,4 +52,14 @@ public class SlateUIDTO {
     public void setAutomationLevel(String automationLevel) {
         this.automationLevel = automationLevel;
     }
+
+    @Override
+    public String toString() {
+        return "SlateUIDTO{" +
+                "apiName='" + apiName + '\'' +
+                ", branch='" + branch + '\'' +
+                ", email='" + email + '\'' +
+                ", automationLevel='" + automationLevel + '\'' +
+                '}';
+    }
 }
