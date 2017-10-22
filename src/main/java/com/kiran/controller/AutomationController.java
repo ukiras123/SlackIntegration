@@ -5,6 +5,7 @@ import com.kiran.model.response.GenericErrorResponse;
 import com.kiran.model.response.SlackResponse;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.regressionTest.RegressionTest;
+import com.kiran.service.utilities.SlackAsyncService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ public class AutomationController {
     @Autowired
     private RegressionTest regressionTest;
 
+    @Autowired
+    private SlackAsyncService slackAsyncService;
 
     @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -37,6 +40,7 @@ public class AutomationController {
         logger.info("Inside /automation controller------------------------------------");
         try {
             logger.info(slateUIDTO.toString());
+            slackAsyncService.logInDB("UI Automation", slateUIDTO.toString());
             String report = regressionTest.doRegression(slateUIDTO.getApiName(), slateUIDTO.getBranch(), slateUIDTO.getEmail(), slateUIDTO.getAutomationLevel());
             SlackResponse responseOk = new SlackResponse(report);
             return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
