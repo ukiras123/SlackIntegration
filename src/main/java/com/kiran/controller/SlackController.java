@@ -2,10 +2,8 @@ package com.kiran.controller;
 
 import com.kiran.model.response.SlackResponse;
 import com.kiran.service.SlackService;
-import com.kiran.service.UserLogService;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
-import com.kiran.service.integration.WitAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
 import org.slf4j.Logger;
@@ -41,14 +39,10 @@ public class SlackController {
     @Autowired
     private JiraAPI jiraAPI;
 
-    @Autowired
-    private UserLogService userLogService;
 
     @Autowired
     private SlackAsyncService slackAsyncService;
 
-    @Autowired
-    private WitAPI witAPI;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -72,7 +66,7 @@ public class SlackController {
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
-            slackAsyncService.logInDB(userName,text);
+            slackAsyncService.logInDB(userName, text);
             if (!text.isEmpty()) {
                 String jiraTicket = slackService.getJiraCode(text);
                 if (jiraTicket == null) {
@@ -81,7 +75,11 @@ public class SlackController {
                 }
                 HashMap<String, String> jiraMap;
                 jiraMap = slackService.getJiraResponse(jiraTicket);
-                SlackResponse response = new SlackResponse("*Ticket* : " + jiraTicket + "\n*Summary* : " + jiraMap.get("summary") + "\n*Assignee* : " + jiraMap.get("assignee") + "\n*Status* : " + jiraMap.get("status"));
+                String responseString = "*Ticket* : " + jiraTicket + "\n*Summary* : " + jiraMap.get("summary") + "\n*Assignee* : " + jiraMap.get("assignee") + "\n*Status* : " + jiraMap.get("status");
+                if (jiraMap.get("lastComment") != null) {
+                    responseString += "\n*LastComment* : " + jiraMap.get("lastComment");
+                }
+                SlackResponse response = new SlackResponse(responseString);
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
 
             } else {
@@ -150,7 +148,7 @@ public class SlackController {
 
     @RequestMapping(value = "/food", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
-    public HttpEntity<?> getRestaurantsDetails(@RequestBody MultiValueMap<String, String> formVars) throws InterruptedException{
+    public HttpEntity<?> getRestaurantsDetails(@RequestBody MultiValueMap<String, String> formVars) throws InterruptedException {
         logger.info("Inside /food controller------------------------------------");
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
@@ -160,10 +158,35 @@ public class SlackController {
             slackAsyncService.logInDB(userName, text);
             slackAsyncService.postMessage(userName, text, responseUrl);
             return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
-        } finally{
+        } finally {
             logger.info("Exiting /food controller------------------------------------");
         }
     }
+
+
+    @RequestMapping(value = "/regression", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public HttpEntity<?> runRegression(@RequestBody MultiValueMap<String, String> formVars) throws InterruptedException {
+        logger.info("Inside /regression controller------------------------------------");
+        try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            String[] splited = text.split("\\s+");
+            String responseUrl = utilities.trimString(formVars.get("response_url").toString(), 1);
+            SlackResponse responseOk = new SlackResponse("Testing " + splited[0] + "...... Branch: " + splited[1]);
+            slackAsyncService.logInDB(userName, text);
+            slackAsyncService.regressionTestResponse(splited[0], splited[1], splited[2], responseUrl);
+            return new ResponseEntity<>(responseOk, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator.");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } finally {
+            logger.info("Exiting /regression controller------------------------------------");
+        }
+    }
+
+
 }
 
 
