@@ -8,6 +8,7 @@ import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.integration.WitAPI;
 import com.kiran.service.integration.YelpAPI;
 import com.kiran.service.utilities.Utilities;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +46,19 @@ public class SlackService {
             String summary = k.getJSONObject("fields").getString("summary");
             String asignee = "N/A";
             if (!k.getJSONObject("fields").get("assignee").toString().equals("null")) {
-                asignee  = k.getJSONObject("fields").getJSONObject("assignee").getString("name");
+                asignee  = k.getJSONObject("fields").getJSONObject("assignee").getString("displayName");
             }
             String status = k.getJSONObject("fields").getJSONObject("status").getString("name");
+            JSONArray commentArray = k.getJSONObject("fields").getJSONObject("comment").getJSONArray("comments");
+            String comment = null;
+            if (commentArray.length() != 0) {
+                comment = commentArray.getJSONObject(commentArray.length()-1).getJSONObject("updateAuthor").getString("displayName");
+                comment += "-> "+ commentArray.getJSONObject(commentArray.length()-1).getString("body");
+            }
             hmap.put("summary", summary);
             hmap.put("assignee", asignee);
             hmap.put("status", status);
+            hmap.put("lastComment", comment);
         } catch (InvalidMove b) {
             throw b;
         }catch (Exception ex) {

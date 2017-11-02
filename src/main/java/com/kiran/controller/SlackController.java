@@ -75,7 +75,11 @@ public class SlackController {
                 }
                 HashMap<String, String> jiraMap;
                 jiraMap = slackService.getJiraResponse(jiraTicket);
-                SlackResponse response = new SlackResponse("*Ticket* : " + jiraTicket + "\n*Summary* : " + jiraMap.get("summary") + "\n*Assignee* : " + jiraMap.get("assignee") + "\n*Status* : " + jiraMap.get("status"));
+                String responseString = "*Ticket* : " + jiraTicket + "\n*Summary* : " + jiraMap.get("summary") + "\n*Assignee* : " + jiraMap.get("assignee") + "\n*Status* : " + jiraMap.get("status");
+                if (jiraMap.get("lastComment") != null) {
+                    responseString += "\n*LastComment* : " + jiraMap.get("lastComment");
+                }
+                SlackResponse response = new SlackResponse(responseString);
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
 
             } else {
