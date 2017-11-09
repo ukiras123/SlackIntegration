@@ -1,11 +1,16 @@
 package com.kiran.controller;
 
+import com.kiran.controller.dto.RetroDTO.RetroDTO;
+import com.kiran.model.entity.RetroEntity;
+import com.kiran.model.response.ReadAllRetroResponse;
 import com.kiran.model.response.SlackResponse;
+import com.kiran.service.RetroService;
 import com.kiran.service.SlackService;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
+import com.kiran.translator.RetroTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +24,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author Kiran
@@ -42,6 +51,13 @@ public class SlackController {
 
     @Autowired
     private SlackAsyncService slackAsyncService;
+
+
+    @Autowired
+    private RetroService retroService;
+
+    @Autowired
+    private RetroTranslator retroTranslator;
 
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -187,6 +203,94 @@ public class SlackController {
     }
 
 
+    //Read all message
+    @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> readRetros() {
+        Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro();
+        List<RetroDTO> retroEntityList =
+                retroTranslator.entityListToDTOList(retroEntityIterable);
+        ReadAllRetroResponse response = new ReadAllRetroResponse(retroEntityList);
+        return new ResponseEntity<>(response, null, HttpStatus.OK);
+    }
+
+
+    //CreateRetro
+    @RequestMapping(value = "/retros", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> createRetro(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = new Date();
+            String timeStamp = dateFormat.format(date);
+            RetroEntity entity = new RetroEntity(userName, text, timeStamp, true);
+            slackAsyncService.logInDB(userName, text);
+            retroService.createRetro(entity);
+            SlackResponse response = new SlackResponse("Your message has been saved anonymously", true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator.", true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+    //Clear all message
+    @RequestMapping(value = "/retros/clear", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> clearRetros(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = new Date();
+            String timeStamp = dateFormat.format(date);
+            RetroEntity entity = new RetroEntity(userName, text, timeStamp, true);
+            slackAsyncService.logInDB(userName, text);
+
+            Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro();
+            for (RetroEntity e : retroEntityIterable) {
+                e.setActive(false);
+                retroService.createRetro(e);
+            }
+            SlackResponse response = new SlackResponse("All Previous Retros has been cleared.", true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator.", true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+
+    }
+
+    //Read all message
+    @RequestMapping(value = "/retros/read", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> readRetros(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            List<RetroEntity> retroEntityList = retroService.readAllActiveRetro();
+            String message = "";
+            if (retroEntityList.size() == 0) {
+                message = "\n*There is not any message at the moment.*\n";
+            } else {
+                message = "\n*-----All Retro Messages-----*\n";
+                int i = 1;
+                for (RetroEntity e : retroEntityList) {
+                    message += "*" + i + ". " + e.getRetroMessage() + "*\n";
+                    i++;
+                }
+            }
+            String finalMessage = utilities.trimString(message, 1);
+            SlackResponse response = new SlackResponse(finalMessage);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator.", true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+
+    }
 }
 
 

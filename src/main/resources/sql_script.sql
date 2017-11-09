@@ -23,3 +23,15 @@ CREATE TABLE user_sign_up (
   jira_user varchar(100),
   jira_pass varchar(100)
   );
+
+
+
+USE users;
+
+CREATE TABLE retro_detail (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_name varchar(100) NOT NULL,
+  time_stamp varchar(100) NOT NULL,
+  retro_message varchar(100) NOT NULL,
+  is_active boolean NOT NULL
+  );

@@ -15,6 +15,15 @@ public class SlackResponse {
         this.response_type = "in_channel";
     }
 
+    public SlackResponse(String text, boolean isPrivate) {
+        this.text = text;
+        if (isPrivate == true) {
+            this.response_type = "ephemeral";
+        } else {
+            this.response_type = "in_channel";
+        }
+    }
+
     public String getText() {
         return text;
     }
