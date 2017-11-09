@@ -243,18 +243,19 @@ public class SlackController {
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
-            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            Date date = new Date();
-            String timeStamp = dateFormat.format(date);
-            RetroEntity entity = new RetroEntity(userName, text, timeStamp, true);
             slackAsyncService.logInDB(userName, text);
-
-            Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro();
-            for (RetroEntity e : retroEntityIterable) {
-                e.setActive(false);
-                retroService.createRetro(e);
+            String message = "";
+            if (!(userName.equalsIgnoreCase("kiran") || userName.equalsIgnoreCase("psagiraju"))) {
+                message = "You do not have enough rights for this call.";
+            } else {
+                Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro();
+                for (RetroEntity e : retroEntityIterable) {
+                    e.setActive(false);
+                    retroService.createRetro(e);
+                }
+                message = "All Previous Retros has been cleared.";
             }
-            SlackResponse response = new SlackResponse("All Previous Retros has been cleared.", true);
+            SlackResponse response = new SlackResponse(message, true);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -274,7 +275,7 @@ public class SlackController {
             if (retroEntityList.size() == 0) {
                 message = "\n*There is not any message at the moment.*\n";
             } else {
-                message = "\n*-----All Retro Messages-----*\n";
+                message = "\n*-------All Retro Messages-------*\n";
                 int i = 1;
                 for (RetroEntity e : retroEntityList) {
                     message += "*" + i + ". " + e.getRetroMessage() + "*\n";
