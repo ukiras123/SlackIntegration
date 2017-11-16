@@ -7,6 +7,7 @@ import com.kiran.model.response.SlackResponse;
 import com.kiran.service.RetroService;
 import com.kiran.service.SlackService;
 import com.kiran.service.exception.InvalidMove;
+import com.kiran.service.integration.DictionaryAPI;
 import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
@@ -48,6 +49,8 @@ public class SlackController {
     @Autowired
     private JiraAPI jiraAPI;
 
+    @Autowired
+    private DictionaryAPI dictionaryAPI;
 
     @Autowired
     private SlackAsyncService slackAsyncService;
@@ -292,6 +295,26 @@ public class SlackController {
         }
 
     }
+
+
+    @RequestMapping(value = "/dictionary/read", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> getMeaning(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            String sentence = dictionaryAPI.getSentence(text);
+            String meaning = dictionaryAPI.getMeaning(text);
+            SlackResponse response = new SlackResponse("*" + text.toUpperCase() + "*" + "\n\n*Meaning:* " + meaning + "\n*Sentence:* " + sentence+"\n:beer:");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Error. Probably your word doesn't exists. Try again.", true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+
 }
 
 
