@@ -10,6 +10,9 @@ public class SlackResponse {
 
     private String response_type;
 
+
+    private boolean replace_original;
+
     public SlackResponse(String text) {
         this.text = text;
         this.response_type = "in_channel";
@@ -22,6 +25,14 @@ public class SlackResponse {
         } else {
             this.response_type = "in_channel";
         }
+    }
+
+    public boolean isReplace_original() {
+        return replace_original;
+    }
+
+    public void setReplace_original(boolean replace_original) {
+        this.replace_original = replace_original;
     }
 
     public String getText() {

@@ -7,14 +7,14 @@ import java.util.List;
  * @author Kiran
  * @since 9/4/17
  */
-public class SlackResponseAttachment {
+public class SlackResponseAttachment<T> {
     private String text;
 
     private String response_type;
 
-    private List<SlackAttachment> attachments;
+    private List<T> attachments;
 
-    public SlackResponseAttachment(String text, List<SlackAttachment> attachments) {
+    public SlackResponseAttachment(String text, List<T> attachments) {
         this.text = text;
         this.response_type = "in_channel";
         this.attachments = attachments;
@@ -36,11 +36,11 @@ public class SlackResponseAttachment {
         this.response_type = response_type;
     }
 
-    public List<SlackAttachment> getAttachments() {
+    public List<T> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(List<SlackAttachment> attachments) {
+    public void setAttachments(List<T> attachments) {
         this.attachments = attachments;
     }
 

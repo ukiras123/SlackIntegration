@@ -1,8 +1,6 @@
 package com.kiran.service;
 
-import com.kiran.controller.dto.SlackDTO.SlackAttachment;
-import com.kiran.controller.dto.SlackDTO.SlackAttachmentFields;
-import com.kiran.controller.dto.SlackDTO.SlackResponseAttachment;
+import com.kiran.controller.dto.SlackDTO.*;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.integration.WitAPI;
@@ -137,6 +135,20 @@ public class SlackService {
         List<SlackAttachment> slackAttachments = new LinkedList<>();
         slackAttachments.add(new SlackAttachment("If you are interested in my choice", restaurants.get(0).get("url").toString(), "Top 5 Restaurants around "+restaurants.get(0).get("location").toString(),  restaurants.get(0).get("image_url").toString(), fields));
         SlackResponseAttachment responseAttachment = new SlackResponseAttachment(null, slackAttachments);
+        return responseAttachment;
+    }
+
+
+    public SlackResponseAttachment createSlackResponseDictionaryYesNo(String text) {
+        SlackAction action1 = new SlackAction("Yes", "button", "primary", "yes");
+        SlackAction action2 = new SlackAction("No", "button", "danger", "no");
+        List<SlackAction> actions = new LinkedList<>();
+        actions.add(action1);
+        actions.add(action2);
+        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("Do you want to get a sentence for this word?","You are unable to choose Yes or No","dictionary", actions);
+        List<SlackInteractiveAttachment> attachments = new LinkedList<>();
+        attachments.add(attachment);
+        SlackResponseAttachment responseAttachment = new SlackResponseAttachment(text, attachments);
         return responseAttachment;
     }
 

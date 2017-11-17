@@ -37,22 +37,18 @@ public class DictionaryAPI {
     public String getMeaning(String word) throws InterruptedException {
         String URL = String.format(meaningUrl, word);
         String meaning = "";
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Accept", "application/json");
-            headers.add("app_id", dictionaryAppId);
-            headers.add("app_key", dictionaryAppKey);
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.GET, request, String.class);
-            JSONObject jObject  = new JSONObject(response);
-            String strBody =   jObject.getString("body");
-            JSONObject jBody  = new JSONObject(strBody);
-            JSONArray jArray = jBody.getJSONArray("results");
-            meaning = jArray.getJSONObject(0).getJSONArray("lexicalEntries").getJSONObject(0).getJSONArray("entries").getJSONObject(0).getJSONArray("senses").getJSONObject(0).getJSONArray("definitions").get(0).toString();
-        } catch (Exception ex) {
-            this.logger.error("Exception during Dictionary API call. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
-        }
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Accept", "application/json");
+        headers.add("app_id", dictionaryAppId);
+        headers.add("app_key", dictionaryAppKey);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+        ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.GET, request, String.class);
+        JSONObject jObject = new JSONObject(response);
+        String strBody = jObject.getString("body");
+        JSONObject jBody = new JSONObject(strBody);
+        JSONArray jArray = jBody.getJSONArray("results");
+        meaning = jArray.getJSONObject(0).getJSONArray("lexicalEntries").getJSONObject(0).getJSONArray("entries").getJSONObject(0).getJSONArray("senses").getJSONObject(0).getJSONArray("definitions").get(0).toString();
         return meaning;
     }
 
@@ -60,25 +56,20 @@ public class DictionaryAPI {
     public String getSentence(String word) throws InterruptedException {
         String URL = String.format(sentenceUrl, word);
         String sentence = "";
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Accept", "application/json");
-            headers.add("app_id", dictionaryAppId);
-            headers.add("app_key", dictionaryAppKey);
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.GET, request, String.class);
-            JSONObject jObject  = new JSONObject(response);
-            String strBody =   jObject.getString("body");
-            JSONObject jBody  = new JSONObject(strBody);
-            JSONArray jArray = jBody.getJSONArray("results");
-            sentence = jArray.getJSONObject(0).getJSONArray("lexicalEntries").getJSONObject(0).getJSONArray("sentences").getJSONObject(0).getString("text");
-        } catch (Exception ex) {
-            this.logger.error("Exception during Dictionary API call. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
-        }
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Accept", "application/json");
+        headers.add("app_id", dictionaryAppId);
+        headers.add("app_key", dictionaryAppKey);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+        ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.GET, request, String.class);
+        JSONObject jObject = new JSONObject(response);
+        String strBody = jObject.getString("body");
+        JSONObject jBody = new JSONObject(strBody);
+        JSONArray jArray = jBody.getJSONArray("results");
+        sentence = jArray.getJSONObject(0).getJSONArray("lexicalEntries").getJSONObject(0).getJSONArray("sentences").getJSONObject(0).getString("text");
         return sentence;
     }
-
 
 
 }

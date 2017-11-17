@@ -1,6 +1,7 @@
 package com.kiran.controller;
 
 import com.kiran.controller.dto.RetroDTO.RetroDTO;
+import com.kiran.controller.dto.SlackDTO.SlackResponseAttachment;
 import com.kiran.model.entity.RetroEntity;
 import com.kiran.model.response.ReadAllRetroResponse;
 import com.kiran.model.response.SlackResponse;
@@ -12,6 +13,7 @@ import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
 import com.kiran.translator.RetroTranslator;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -300,16 +302,46 @@ public class SlackController {
     @RequestMapping(value = "/dictionary/read", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> getMeaning(@RequestBody MultiValueMap<String, String> formVars) {
+        String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+        String text = utilities.trimString(formVars.get("text").toString(), 1);
         try {
-            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
-            String text = utilities.trimString(formVars.get("text").toString(), 1);
-            String sentence = dictionaryAPI.getSentence(text);
             String meaning = dictionaryAPI.getMeaning(text);
-            SlackResponse response = new SlackResponse("*" + text.toUpperCase() + "*" + "\n\n*Meaning:* " + meaning + "\n*Sentence:* " + sentence+"\n:beer:");
+            //+ "\n*Sentence:* " + sentence+"\n:thinking_face::beer::sunglasses::the_horns:"
+            String responseTest = "*--------------- " + text.toUpperCase() + " ---------------*" + "\n*Meaning:* " + meaning;
+            SlackResponseAttachment response = slackService.createSlackResponseDictionaryYesNo(responseTest);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            SlackResponse response = new SlackResponse("Error. Probably your word doesn't exists. Try again.", true);
+            SlackResponse response = new SlackResponse("Sorry, is \""+text+"\" even a word?");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+
+    @RequestMapping(value = "/dictionary/read/again", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> getBoth(@RequestBody MultiValueMap<String, String> formVars) {
+        JSONObject jObject = new JSONObject(formVars.get("payload").get(0));
+        boolean isYes = jObject.getJSONArray("actions").get(0).toString().contains("yes");
+        String responseUrl = jObject.getString("response_url");
+        String originalMessage = jObject.getJSONObject("original_message").getString("text");
+        String tempWord = originalMessage.split("\n")[0];
+        String text = tempWord.substring(17,tempWord.length()-17);
+        try {
+            String finalString = "";
+            if (isYes == true) {
+                String sentence = dictionaryAPI.getSentence(text);
+                finalString = originalMessage+ "\n*Sentence:* " + sentence;
+            } else {
+                finalString = originalMessage;
+            }
+            SlackResponse response = new SlackResponse(finalString);
+            response.setReplace_original(true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator");
+            response.setReplace_original(true);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
     }
