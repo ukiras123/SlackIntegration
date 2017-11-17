@@ -220,7 +220,7 @@ public class SlackController {
 
 
     //CreateRetro
-    @RequestMapping(value = "/retros", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+    @RequestMapping(value = "/todo", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> createRetro(@RequestBody MultiValueMap<String, String> formVars) {
         try {
@@ -232,7 +232,7 @@ public class SlackController {
             RetroEntity entity = new RetroEntity(userName, text, timeStamp, true);
             slackAsyncService.logInDB(userName, text);
             retroService.createRetro(entity);
-            SlackResponse response = new SlackResponse("Your message has been saved anonymously", true);
+            SlackResponse response = new SlackResponse("Your message has been saved to the list.", true);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -242,7 +242,7 @@ public class SlackController {
     }
 
     //Clear all message
-    @RequestMapping(value = "/retros/clear", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+    @RequestMapping(value = "/todo/clear", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> clearRetros(@RequestBody MultiValueMap<String, String> formVars) {
         try {
@@ -250,7 +250,7 @@ public class SlackController {
             String text = utilities.trimString(formVars.get("text").toString(), 1);
             slackAsyncService.logInDB(userName, text);
             String message = "";
-            if (!(userName.equalsIgnoreCase("kiran") || userName.equalsIgnoreCase("psagiraju"))) {
+            if (!(userName.equalsIgnoreCase("kiran"))) {
                 message = "You do not have enough rights for this call.";
             } else {
                 Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro();
@@ -258,7 +258,7 @@ public class SlackController {
                     e.setActive(false);
                     retroService.createRetro(e);
                 }
-                message = "All Previous Retros has been cleared.";
+                message = "All previous To-Do list has been cleared.";
             }
             SlackResponse response = new SlackResponse(message, true);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
@@ -271,16 +271,16 @@ public class SlackController {
     }
 
     //Read all message
-    @RequestMapping(value = "/retros/read", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+    @RequestMapping(value = "/todo/read", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> readRetros(@RequestBody MultiValueMap<String, String> formVars) {
         try {
             List<RetroEntity> retroEntityList = retroService.readAllActiveRetro();
             String message = "";
             if (retroEntityList.size() == 0) {
-                message = "\n*There is not any message at the moment.*\n";
+                message = "\n*No To-Do things the moment.*\n";
             } else {
-                message = "\n*-------All Retro Messages-------*\n";
+                message = "\n*-------Your To-Do List-------*\n";
                 int i = 1;
                 for (RetroEntity e : retroEntityList) {
                     message += "*" + i + ". " + e.getRetroMessage() + "*\n";
