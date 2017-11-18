@@ -10,6 +10,7 @@ import com.kiran.service.SlackService;
 import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.DictionaryAPI;
 import com.kiran.service.integration.JiraAPI;
+import com.kiran.service.integration.RandomAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
 import com.kiran.translator.RetroTranslator;
@@ -53,6 +54,9 @@ public class SlackController {
 
     @Autowired
     private DictionaryAPI dictionaryAPI;
+
+    @Autowired
+    private RandomAPI randomAPI;
 
     @Autowired
     private SlackAsyncService slackAsyncService;
@@ -278,7 +282,7 @@ public class SlackController {
             List<RetroEntity> retroEntityList = retroService.readAllActiveRetro();
             String message = "";
             if (retroEntityList.size() == 0) {
-                message = "\n*No To-Do things the moment.*\n";
+                message = "\n*Your To-Do list is empty.*\n";
             } else {
                 message = "\n*-------Your To-Do List-------*\n";
                 int i = 1;
@@ -289,6 +293,9 @@ public class SlackController {
             }
             String finalMessage = utilities.trimString(message, 1);
             SlackResponse response = new SlackResponse(finalMessage);
+            if (retroEntityList.size() == 0) {
+                response.setResponse_type("private");
+            }
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -340,8 +347,25 @@ public class SlackController {
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            SlackResponse response = new SlackResponse("Something went wrong. Please contact your administrator");
+            SlackResponse response = new SlackResponse(originalMessage + "\nSorry, I need to learn how to create a sentence with that word.");
             response.setReplace_original(true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+
+    @RequestMapping(value = "/surprise", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> getSurprise(@RequestBody MultiValueMap<String, String> formVars) {
+        String outCome = "";
+        try {
+            outCome = randomAPI.getSurprise();
+            SlackResponse response = new SlackResponse(outCome);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again.");
+            response.setResponse_type("private");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
     }
