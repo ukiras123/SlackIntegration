@@ -230,6 +230,10 @@ public class SlackController {
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
+            if (!(userName.equalsIgnoreCase("kiran"))) {
+                SlackResponse response = new SlackResponse("You do not have enough rights for this call.", true);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
             String timeStamp = dateFormat.format(date);
@@ -281,6 +285,7 @@ public class SlackController {
         try {
             List<RetroEntity> retroEntityList = retroService.readAllActiveRetro();
             String message = "";
+
             if (retroEntityList.size() == 0) {
                 message = "\n*Your To-Do list is empty.*\n";
             } else {
@@ -361,6 +366,28 @@ public class SlackController {
         try {
             outCome = randomAPI.getSurprise();
             SlackResponse response = new SlackResponse(outCome);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again.");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+    @RequestMapping(value = "/sarcasm", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> getSarcasm(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            if (!(userName.equalsIgnoreCase("kiran"))) {
+                SlackResponse response = new SlackResponse("You do not have enough rights for this call. Request your admin.", true);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
+            String[] parts = text.split(" ");
+            String sarcasm = randomAPI.getChuckJoke(parts);
+            SlackResponse response = new SlackResponse(sarcasm);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());

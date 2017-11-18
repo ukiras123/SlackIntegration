@@ -1,5 +1,6 @@
 package com.kiran.service.integration;
 
+import com.kiran.service.utilities.Name;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -36,9 +37,12 @@ public class RandomAPI {
     private String chuckUrl;
     @Value("${quote.url}")
     private String quoteUrl;
+    @Value("${weather.url}")
+    private String weatherUrl;
+    @Value("${bitcoin.url}")
+    private String bitcoinUrl;
 
-
-    public JSONObject apiGetCall(String url, Map<String, String> header) throws InterruptedException {
+    private JSONObject apiGetCall(String url, Map<String, String> header) throws InterruptedException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         for (Map.Entry<String, String> entry : header.entrySet()) {
@@ -54,7 +58,7 @@ public class RandomAPI {
 
     public String getSurprise() throws InterruptedException {
         Random generator = new Random();
-        int i = generator.nextInt(3) + 1;
+        int i = generator.nextInt(6) + 1;
         String surprise = "";
         if (i == 1) {
             surprise = getNews();
@@ -62,14 +66,25 @@ public class RandomAPI {
             surprise = getQuote();
         } else if (i == 3) {
             surprise = getDadJoke();
+        } else if (i == 4) {
+            surprise = getChuckJoke(null);
+        } else if (i == 5) {
+            surprise = getBitCoin();
         } else {
-            surprise = getChuckJoke();
+            surprise = getWeather();
         }
         return surprise;
     }
 
+    private String[] getRandomName() {
+        Name[] names = Name.values();
+        Random random = new Random();
+        Name name = names[random.nextInt(names.length)];
+        String[] returnString = {name.getFirstName(), name.getLastName()};
+        return returnString;
+    }
 
-    public String getNews() throws InterruptedException {
+    private String getNews() throws InterruptedException {
         logger.info("Inside News Method------------------------------------");
         Map<String, String> header = new HashMap<>();
         header.put("api-key", nytApiKey);
@@ -83,31 +98,55 @@ public class RandomAPI {
     }
 
 
-    public String getQuote() throws InterruptedException {
+    private String getQuote() throws InterruptedException {
         logger.info("Inside Quote Method------------------------------------");
         Map<String, String> header = new HashMap<>();
         JSONObject jBody = apiGetCall(quoteUrl, header);
         String quote = jBody.getString("quote");
-        return "*-----Be Happy-----*\n" + quote + "\n:wine_glass:";
+        return "*-----Be Happy-----*\n" + quote;
     }
 
-    public String getDadJoke() throws InterruptedException {
+    private String getDadJoke() throws InterruptedException {
         logger.info("Inside Dad Joke Method------------------------------------");
         Map<String, String> header = new HashMap<>();
         header.put("Accept", "application/json");
         header.put("User-Agent", "https://github.com/ukiras123/SlackIntegration");
         JSONObject jBody = apiGetCall(dadjokeUrl, header);
         String joke = jBody.getString("joke");
-        return "*-----Smile-----*\n" + joke + "\n:wine_glass:";
+        return "*-----Smile-----*\n" + joke;
     }
 
-    public String getChuckJoke() throws InterruptedException {
+    private String getWeather() throws InterruptedException {
+        logger.info("Inside Weather Method------------------------------------");
+        Map<String, String> header = new HashMap<>();
+        JSONObject jBody = apiGetCall(weatherUrl, header);
+        String currentSummary = jBody.getJSONObject("currently").getString("summary");
+        String currentTemperature = jBody.getJSONObject("currently").getInt("temperature") + "°F";
+        String dailySummary = jBody.getJSONObject("daily").getString("summary");
+        return "*-----Weather-----*\n" + dailySummary + "\nCurrent: " + currentSummary + ", " + currentTemperature;
+    }
+
+    private String getBitCoin() throws InterruptedException {
+        logger.info("Inside BitCoin Method------------------------------------");
+        Map<String, String> header = new HashMap<>();
+        JSONObject jBody = apiGetCall(bitcoinUrl, header);
+        String currentRate = jBody.getJSONObject("bpi").getJSONObject("USD").getString("rate");
+        return "*-----$BTC$-----*\n" + "BitCoin Price: *$" + currentRate + "*\nGrab it before its too late.";
+    }
+
+    public String getChuckJoke(String[] inputName) throws InterruptedException {
         logger.info("Inside Chuck Joke Method------------------------------------");
         Map<String, String> header = new HashMap<>();
-        JSONObject jBody = apiGetCall(chuckUrl, header);
-        String joke = jBody.getString("value");
-        return "*-----Smile-----*\n" + joke + "\n:wine_glass:";
+        header.put("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+        String[] name = inputName;
+        if (inputName == null) {
+            name = getRandomName();
+        }
+        String finalUrl = chuckUrl + "?firstName=" + name[0] + "&lastName=" + name[1];
+        JSONObject jBody = apiGetCall(finalUrl, header);
+        logger.info(chuckUrl);
+        String joke = jBody.getJSONObject("value").getString("joke");
+        return "*-----Sarcasm-----*\n" + joke + "\n:wine_glass:";
     }
-
 
 }
