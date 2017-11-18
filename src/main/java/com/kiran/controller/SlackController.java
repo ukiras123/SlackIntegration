@@ -385,7 +385,10 @@ public class SlackController {
                 SlackResponse response = new SlackResponse("You do not have enough rights for this call. Request your admin.", true);
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             }
-            String[] parts = text.split(" ");
+            String[] parts = null;
+            if (text.length() > 2) {
+                parts = text.split(" ");
+            }
             String sarcasm = randomAPI.getChuckJoke(parts);
             SlackResponse response = new SlackResponse(sarcasm);
             return new ResponseEntity<>(response, null, HttpStatus.OK);

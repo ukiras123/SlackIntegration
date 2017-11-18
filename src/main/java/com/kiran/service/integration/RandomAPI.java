@@ -135,7 +135,7 @@ public class RandomAPI {
     }
 
     public String getChuckJoke(String[] inputName) throws InterruptedException {
-        logger.info("Inside Chuck Joke Method------------------------------------");
+        logger.info("Inside Chuck Joke Method-------------------------------------");
         Map<String, String> header = new HashMap<>();
         header.put("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
         String[] name = inputName;
@@ -146,7 +146,7 @@ public class RandomAPI {
         JSONObject jBody = apiGetCall(finalUrl, header);
         logger.info(chuckUrl);
         String joke = jBody.getJSONObject("value").getString("joke");
-        return "*-----Sarcasm-----*\n" + joke + "\n:wine_glass:";
+        return joke + "\n:wine_glass:";
     }
 
 }
