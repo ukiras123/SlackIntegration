@@ -1,5 +1,6 @@
 package com.kiran.service.integration;
 
+import com.kiran.service.utilities.ChuckCategory;
 import com.kiran.service.utilities.Name;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -58,7 +59,7 @@ public class RandomAPI {
 
     public String getSurprise() throws InterruptedException {
         Random generator = new Random();
-        int i = generator.nextInt(6) + 1;
+        int i = 4;
         String surprise = "";
         if (i == 1) {
             surprise = getNews();
@@ -67,7 +68,7 @@ public class RandomAPI {
         } else if (i == 3) {
             surprise = getDadJoke();
         } else if (i == 4) {
-            surprise = getChuckJoke(null);
+            surprise = getChuckJoke(null, null);
         } else if (i == 5) {
             surprise = getBitCoin();
         } else {
@@ -82,6 +83,13 @@ public class RandomAPI {
         Name name = names[random.nextInt(names.length)];
         String[] returnString = {name.getFirstName(), name.getLastName()};
         return returnString;
+    }
+
+    private String getRandomCategory() {
+        ChuckCategory[] categories = ChuckCategory.values();
+        Random random = new Random();
+        ChuckCategory category = categories[random.nextInt(categories.length)];
+        return category.getName();
     }
 
     private String getNews() throws InterruptedException {
@@ -134,18 +142,31 @@ public class RandomAPI {
         return "*-----$BTC$-----*\n" + "BitCoin Price: *$" + currentRate + "*\nGrab it before its too late.";
     }
 
-    public String getChuckJoke(String[] inputName) throws InterruptedException {
+    public String getChuckJoke(String[] inputName, String category) throws InterruptedException {
         logger.info("Inside Chuck Joke Method-------------------------------------");
         Map<String, String> header = new HashMap<>();
-        header.put("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+        header.put("user-agent", "https://github.com/ukiras123/SlackIntegration");
         String[] name = inputName;
         if (inputName == null) {
             name = getRandomName();
         }
-        String finalUrl = chuckUrl + "?firstName=" + name[0] + "&lastName=" + name[1];
+        String addCategory = "?category=";
+        String finalUrl = "";
+        if (category != null) {
+            ChuckCategory c = ChuckCategory.valueOf(category);
+            if (c != null) {
+                finalUrl = chuckUrl + addCategory + category;
+            } else {
+                finalUrl = chuckUrl + addCategory + getRandomCategory();
+            }
+        } else {
+            finalUrl = chuckUrl + addCategory + getRandomCategory();
+        }
         JSONObject jBody = apiGetCall(finalUrl, header);
-        logger.info(chuckUrl);
-        String joke = jBody.getJSONObject("value").getString("joke");
+        logger.info(finalUrl);
+        String joke = jBody.getString("value");
+        joke = joke.replaceAll("Chuck", name[0]);
+        joke = joke.replaceAll("Norris", name[1]);
         return joke + "\n:wine_glass:";
     }
 

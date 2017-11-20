@@ -389,7 +389,11 @@ public class SlackController {
             if (text.length() > 2) {
                 parts = text.split(" ");
             }
-            String sarcasm = randomAPI.getChuckJoke(parts);
+            String category = null;
+            if (parts.length >= 3) {
+                category = parts[2];
+            }
+            String sarcasm = randomAPI.getChuckJoke(parts, category);
             SlackResponse response = new SlackResponse(sarcasm);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
