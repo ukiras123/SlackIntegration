@@ -41,6 +41,14 @@ public class RetroService {
         return list;
     }
 
+    public List<RetroEntity> readAllActiveRetro(String userName) {
+        List<RetroEntity> list = new ArrayList<RetroEntity>();
+        for (RetroEntity retro :  retroDao.findByIsActiveAndUserName(true, userName)) {
+            list.add(retro);
+        }
+        return list;
+    }
+
     public Iterable<RetroEntity> readUserName(final String userName) {
         return retroDao.findByUserName(userName);
     }

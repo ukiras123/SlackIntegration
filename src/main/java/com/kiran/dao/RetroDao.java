@@ -14,6 +14,8 @@ public interface RetroDao extends CrudRepository<RetroEntity, Long> {
 
     Iterable<RetroEntity> findByIsActive(boolean isActive);
 
+    Iterable<RetroEntity> findByIsActiveAndUserName(boolean isActive, String userName);
+
     Iterable<RetroEntity> findByUserName(String userName);
 
 }

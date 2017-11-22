@@ -258,16 +258,12 @@ public class SlackController {
             String text = utilities.trimString(formVars.get("text").toString(), 1);
             slackAsyncService.logInDB(userName, text);
             String message = "";
-            if (!(userName.equalsIgnoreCase("kiran"))) {
-                message = "You do not have enough rights for this call.";
-            } else {
-                Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro();
+                Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro(userName);
                 for (RetroEntity e : retroEntityIterable) {
                     e.setActive(false);
                     retroService.createRetro(e);
                 }
                 message = "All previous To-Do list has been cleared.";
-            }
             SlackResponse response = new SlackResponse(message, true);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
@@ -283,13 +279,14 @@ public class SlackController {
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> readRetros(@RequestBody MultiValueMap<String, String> formVars) {
         try {
-            List<RetroEntity> retroEntityList = retroService.readAllActiveRetro();
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            List<RetroEntity> retroEntityList = retroService.readAllActiveRetro(userName);
             String message = "";
 
             if (retroEntityList.size() == 0) {
                 message = "\n*Your To-Do list is empty.*\n";
             } else {
-                message = "\n*-------Your To-Do List-------*\n";
+                message = "\n*-------"+userName.substring(0, 1).toUpperCase() + userName.substring(1)+"'s To-Do List-------*\n";
                 int i = 1;
                 for (RetroEntity e : retroEntityList) {
                     message += "*" + i + ". " + e.getRetroMessage() + "*\n";
