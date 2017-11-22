@@ -280,7 +280,7 @@ public class SlackController {
             String message = "";
 
             if (retroEntityList.size() == 0) {
-                message = "\n*Your To-Do list is empty.*\n";
+                message = "\n*Your To-Do list is empty.*\nTo add, just type /add-to-my-todo [message]";
             } else {
                 message = "\n*-------"+userName.substring(0, 1).toUpperCase() + userName.substring(1)+"'s To-Do List-------*\n";
                 int i = 1;
