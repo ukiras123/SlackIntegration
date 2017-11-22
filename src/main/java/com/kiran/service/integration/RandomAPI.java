@@ -59,7 +59,7 @@ public class RandomAPI {
 
     public String getSurprise() throws InterruptedException {
         Random generator = new Random();
-        int i = 4;
+        int i = generator.nextInt(6) + 1;
         String surprise = "";
         if (i == 1) {
             surprise = getNews();
@@ -68,7 +68,7 @@ public class RandomAPI {
         } else if (i == 3) {
             surprise = getDadJoke();
         } else if (i == 4) {
-            surprise = getChuckJoke(null, null);
+            surprise = getDadJoke();
         } else if (i == 5) {
             surprise = getBitCoin();
         } else {
@@ -152,13 +152,8 @@ public class RandomAPI {
         }
         String addCategory = "?category=";
         String finalUrl = "";
-        if (category != null) {
-            ChuckCategory c = ChuckCategory.valueOf(category);
-            if (c != null) {
-                finalUrl = chuckUrl + addCategory + category;
-            } else {
-                finalUrl = chuckUrl + addCategory + getRandomCategory();
-            }
+        if (containsInChuckCategory(category)) {
+            finalUrl = chuckUrl + addCategory + category;
         } else {
             finalUrl = chuckUrl + addCategory + getRandomCategory();
         }
@@ -168,6 +163,15 @@ public class RandomAPI {
         joke = joke.replaceAll("Chuck", name[0]);
         joke = joke.replaceAll("Norris", name[1]);
         return joke + "\n:wine_glass:";
+    }
+
+    public  boolean containsInChuckCategory(String test) {
+        for (ChuckCategory c : ChuckCategory.values()) {
+            if (c.getName().equals(test)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

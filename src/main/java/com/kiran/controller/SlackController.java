@@ -381,10 +381,10 @@ public class SlackController {
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
-            if (!(userName.equalsIgnoreCase("kiran"))) {
-                SlackResponse response = new SlackResponse("You do not have enough rights for this call. Request your admin.", true);
-                return new ResponseEntity<>(response, null, HttpStatus.OK);
-            }
+//            if (!(userName.equalsIgnoreCase("kiran"))) {
+//                SlackResponse response = new SlackResponse("You do not have enough rights for this call. Request your admin.", true);
+//                return new ResponseEntity<>(response, null, HttpStatus.OK);
+//            }
             String[] parts = null;
             if (text.length() > 2) {
                 parts = text.split(" ");
@@ -393,6 +393,7 @@ public class SlackController {
             if (parts.length >= 3) {
                 category = parts[2];
             }
+            logger.info(text);
             String sarcasm = randomAPI.getChuckJoke(parts, category);
             SlackResponse response = new SlackResponse(sarcasm);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
@@ -404,6 +405,23 @@ public class SlackController {
         }
     }
 
+
+    @RequestMapping(value = "/jira/sprint", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> getSprintDetail(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            String sprint = jiraAPI.getArgoSprintDetail();
+            SlackResponse response = new SlackResponse(sprint);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again.");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
 
 }
 

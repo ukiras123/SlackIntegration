@@ -30,4 +30,5 @@ public enum ChuckCategory {
     public String getName() {
         return name;
     }
+
 }
