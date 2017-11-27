@@ -96,14 +96,34 @@ public class JiraAPI {
         }
         Collections.sort(ticketList);
         String finalString = "*Welcome to ARGO*\n";
-        finalString += "*---------- Total: " + totalTickets + ", Done: "+doneTickets+" ----------*\n";
+        finalString += "*---------- Total: " + totalTickets + ", Done: " + doneTickets + " ----------*\n";
         if (showAll == false) {
             for (SprintTicket ticket : ticketList) {
-                finalString += "*" + ticket.getTicket() + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     \n";
+                String symbol = "";
+                if (ticket.getStatus().equalsIgnoreCase("Done")) {
+                    symbol = ":white_check_mark:";
+                } else if (ticket.getStatus().equalsIgnoreCase("In Backlog")) {
+                    symbol = ":interrobang:";
+                } else if (ticket.getStatus().equalsIgnoreCase("In QA")) {
+                    symbol = ":sonic:";
+                } else if (ticket.getStatus().equalsIgnoreCase("In Progress")) {
+                    symbol = ":ninja:";
+                }
+                finalString += "*" + ticket.getTicket() + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     " + symbol + "\n";
             }
         } else {
             for (SprintTicket ticket : ticketList) {
-                finalString += "*" + ticket.getTicket() + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     \n     "+ ticket.getSummary()+"\n";
+                String symbol = "";
+                if (ticket.getStatus().equalsIgnoreCase("Done")) {
+                    symbol = ":white_check_mark:";
+                } else if (ticket.getStatus().equalsIgnoreCase("In Backlog")) {
+                    symbol = ":interrobang:";
+                } else if (ticket.getStatus().equalsIgnoreCase("In QA")) {
+                    symbol = ":sonic:";
+                } else if (ticket.getStatus().equalsIgnoreCase("In Progress")) {
+                    symbol = ":ninja:";
+                }
+                finalString += "*" + ticket.getTicket() + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     " + symbol + "\n     " + ticket.getSummary() + "\n";
             }
         }
         return finalString;
