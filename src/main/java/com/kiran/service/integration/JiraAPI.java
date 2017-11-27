@@ -62,7 +62,7 @@ public class JiraAPI {
         return null;
     }
 
-    public String getArgoSprintDetail() throws InterruptedException {
+    public String getArgoSprintDetail(boolean showAll) throws InterruptedException {
         logger.info("inside getArgoSprintDetail ---------");
         String URL = jiraUrl + "/search";
         String payload = "{\"jql\":\"project = ARGO AND issuetype in (Bug, Story, Task) AND \\\"Epic Link\\\" = ARGO-1910 and sprint in openSprints() ORDER BY status \",\"fields\":[\"summary\",\"status\",\"assignee\",\"customfield_10008\"]}";
@@ -76,6 +76,7 @@ public class JiraAPI {
         String strBody = jObject.getString("body");
         JSONObject jBody = new JSONObject(strBody);
         int totalTickets = jBody.getInt("total");
+        int doneTickets = 0;
         JSONArray jsonArray = jBody.getJSONArray("issues");
         List<SprintTicket> ticketList = new LinkedList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -87,15 +88,23 @@ public class JiraAPI {
                 assigneeNameValue = jsonArray.getJSONObject(i).getJSONObject("fields").getJSONObject("assignee").getString("displayName");
             }
             String statusValue = jsonArray.getJSONObject(i).getJSONObject("fields").getJSONObject("status").getString("name");
-
+            if (statusValue.equalsIgnoreCase("DONE")) {
+                doneTickets++;
+            }
             SprintTicket tempTicket = new SprintTicket(keyValue, summaryValue, assigneeNameValue, statusValue);
             ticketList.add(tempTicket);
         }
         Collections.sort(ticketList);
         String finalString = "*Welcome to ARGO*\n";
-        finalString += "*----------TotalTickets: " + totalTickets + "----------*\n";
-        for (SprintTicket ticket : ticketList) {
-            finalString += "*" + ticket.getTicket() + "*   \"" + ticket.getStatus() + "\" ---> " + ticket.getAssigneeName()+"     \n";
+        finalString += "*---------- Total: " + totalTickets + ", Done: "+doneTickets+" ----------*\n";
+        if (showAll == false) {
+            for (SprintTicket ticket : ticketList) {
+                finalString += "*" + ticket.getTicket() + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     \n";
+            }
+        } else {
+            for (SprintTicket ticket : ticketList) {
+                finalString += "*" + ticket.getTicket() + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     \n     "+ ticket.getSummary()+"\n";
+            }
         }
         return finalString;
     }

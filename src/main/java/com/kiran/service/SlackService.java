@@ -152,4 +152,17 @@ public class SlackService {
         return responseAttachment;
     }
 
+    public SlackResponseAttachment createSlackResponseSprintYesNo(String text) {
+        SlackAction action1 = new SlackAction("Yes", "button", "primary", "yes");
+        SlackAction action2 = new SlackAction("No", "button", "danger", "no");
+        List<SlackAction> actions = new LinkedList<>();
+        actions.add(action1);
+        actions.add(action2);
+        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("Do you want to see the ticket's summary?","You are unable to choose Yes or No","sprint", actions);
+        List<SlackInteractiveAttachment> attachments = new LinkedList<>();
+        attachments.add(attachment);
+        SlackResponseAttachment responseAttachment = new SlackResponseAttachment(text, attachments);
+        return responseAttachment;
+    }
+
 }

@@ -254,12 +254,12 @@ public class SlackController {
             String text = utilities.trimString(formVars.get("text").toString(), 1);
             slackAsyncService.logInDB(userName, text);
             String message = "";
-                Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro(userName);
-                for (RetroEntity e : retroEntityIterable) {
-                    e.setActive(false);
-                    retroService.createRetro(e);
-                }
-                message = "All previous To-Do list has been cleared.";
+            Iterable<RetroEntity> retroEntityIterable = retroService.readAllActiveRetro(userName);
+            for (RetroEntity e : retroEntityIterable) {
+                e.setActive(false);
+                retroService.createRetro(e);
+            }
+            message = "All previous To-Do list has been cleared.";
             SlackResponse response = new SlackResponse(message, true);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
@@ -282,7 +282,7 @@ public class SlackController {
             if (retroEntityList.size() == 0) {
                 message = "\n*Your To-Do list is empty.*\nTo add, just type /add-to-my-todo [message]";
             } else {
-                message = "\n*-------"+userName.substring(0, 1).toUpperCase() + userName.substring(1)+"'s To-Do List-------*\n";
+                message = "\n*-------" + userName.substring(0, 1).toUpperCase() + userName.substring(1) + "'s To-Do List-------*\n";
                 int i = 1;
                 for (RetroEntity e : retroEntityList) {
                     message += "*" + i + ". " + e.getRetroMessage() + "*\n";
@@ -317,36 +317,7 @@ public class SlackController {
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            SlackResponse response = new SlackResponse("Sorry, is \""+text+"\" even a word?");
-            return new ResponseEntity<>(response, null, HttpStatus.OK);
-        }
-    }
-
-
-    @RequestMapping(value = "/dictionary/read/again", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> getBoth(@RequestBody MultiValueMap<String, String> formVars) {
-        JSONObject jObject = new JSONObject(formVars.get("payload").get(0));
-        boolean isYes = jObject.getJSONArray("actions").get(0).toString().contains("yes");
-        String responseUrl = jObject.getString("response_url");
-        String originalMessage = jObject.getJSONObject("original_message").getString("text");
-        String tempWord = originalMessage.split("\n")[0];
-        String text = tempWord.substring(17,tempWord.length()-17);
-        try {
-            String finalString = "";
-            if (isYes == true) {
-                String sentence = dictionaryAPI.getSentence(text);
-                finalString = originalMessage+ "\n*Sentence:* " + sentence;
-            } else {
-                finalString = originalMessage;
-            }
-            SlackResponse response = new SlackResponse(finalString);
-            response.setReplace_original(true);
-            return new ResponseEntity<>(response, null, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            SlackResponse response = new SlackResponse(originalMessage + "\nSorry, I need to learn how to create a sentence with that word.");
-            response.setReplace_original(true);
+            SlackResponse response = new SlackResponse("Sorry, is \"" + text + "\" even a word?");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
     }
@@ -405,8 +376,9 @@ public class SlackController {
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
-            String sprint = jiraAPI.getArgoSprintDetail();
-            SlackResponse response = new SlackResponse(sprint);
+            String sprint = jiraAPI.getArgoSprintDetail(false);
+            String sprintDetail = new SlackResponse(sprint).getText();
+            SlackResponseAttachment response = slackService.createSlackResponseSprintYesNo(sprintDetail);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -415,6 +387,61 @@ public class SlackController {
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
     }
+
+    @RequestMapping(value = "/callback", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> getBoth(@RequestBody MultiValueMap<String, String> formVars) {
+
+        JSONObject jObject = new JSONObject(formVars.get("payload").get(0));
+        String callback_id = jObject.getString("callback_id");
+        boolean isYes = jObject.getJSONArray("actions").get(0).toString().contains("yes");
+        String responseUrl = jObject.getString("response_url");
+        String originalMessage = jObject.getJSONObject("original_message").getString("text");
+        String tempWord = originalMessage.split("\n")[0];
+        String finalString = "";
+        try {
+            if (callback_id.equalsIgnoreCase("dictionary")) {
+                String text = tempWord.substring(17, tempWord.length() - 17);
+                if (isYes == true) {
+                    String sentence = dictionaryAPI.getSentence(text);
+                    finalString = originalMessage + "\n*Sentence:* " + sentence;
+                } else {
+                    finalString = originalMessage;
+                }
+                SlackResponse response = new SlackResponse(finalString);
+                response.setReplace_original(true);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            } else if (callback_id.equalsIgnoreCase("sprint")) {
+                if (isYes == true) {
+                    String updatedSprint = jiraAPI.getArgoSprintDetail(true);
+                    finalString = updatedSprint;
+                } else {
+                    finalString = originalMessage;
+                }
+                SlackResponse response = new SlackResponse(finalString);
+                response.setReplace_original(true);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            } else {
+                if (isYes == true) {
+                    String updatedSprint = jiraAPI.getArgoSprintDetail(true);
+                    finalString = updatedSprint;
+                } else {
+                    finalString = originalMessage;
+                }
+                SlackResponse response = new SlackResponse(finalString);
+                response.setReplace_original(true);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse(originalMessage + "\nThats all I have.");
+            response.setReplace_original(true);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+
+
+    }
+
 
 }
 
