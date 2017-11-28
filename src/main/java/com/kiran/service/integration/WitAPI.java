@@ -45,7 +45,7 @@ public class WitAPI {
             getEntities(jObject, entities);
             return entities;
         } catch (Exception ex) {
-            this.logger.error("Exception during WIT API call. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
+            this.logger.error("Exception during WIT API call: "+URL+"  Auth: "+ witAuth+". ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
             throw new InvalidMove("I didn't understand you.");
         }
     }

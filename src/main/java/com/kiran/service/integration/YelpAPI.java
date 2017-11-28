@@ -65,7 +65,7 @@ public class YelpAPI {
             }
             return restaurantsInfo;
         } catch (Exception ex) {
-            this.logger.error("Exception during Yelp API call. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
+            this.logger.error("Exception during Yelp API call:"+URL+" ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
             throw new InvalidMove("Something went wrong, please contact your administrator.");
         }
     }
