@@ -99,36 +99,36 @@ public class JiraAPI {
         finalString += "*---------- Total: " + totalTickets + ", Done: " + doneTickets + " ----------*\n";
         if (showAll == false) {
             for (SprintTicket ticket : ticketList) {
-                String symbol = "";
-                if (ticket.getStatus().equalsIgnoreCase("Done")) {
-                    symbol = ":white_check_mark:";
-                } else if (ticket.getStatus().equalsIgnoreCase("In Backlog")) {
-                    symbol = ":interrobang:";
-                } else if (ticket.getStatus().equalsIgnoreCase("In QA")) {
-                    symbol = ":sonic:";
-                } else if (ticket.getStatus().equalsIgnoreCase("In Progress")) {
-                    symbol = ":ninja:";
-                }
+                String symbol = getSymbol(ticket.getStatus());
                 finalString += "*" + ticket.getTicket() + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     " + symbol + "\n";
             }
         } else {
             for (SprintTicket ticket : ticketList) {
-                String symbol = "";
-                if (ticket.getStatus().equalsIgnoreCase("Done")) {
-                    symbol = ":white_check_mark:";
-                } else if (ticket.getStatus().equalsIgnoreCase("In Backlog")) {
-                    symbol = ":interrobang:";
-                } else if (ticket.getStatus().equalsIgnoreCase("In QA")) {
-                    symbol = ":sonic:";
-                } else if (ticket.getStatus().equalsIgnoreCase("In Progress")) {
-                    symbol = ":ninja:";
-                }
+                String symbol = getSymbol(ticket.getStatus());
                 finalString += "*" + ticket.getTicket() + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     " + symbol + "\n     " + ticket.getSummary() + "\n";
             }
         }
         return finalString;
     }
 
+
+    private String getSymbol(String status) {
+        String symbol = "";
+        if (status.equalsIgnoreCase("Done")) {
+            symbol = ":white_check_mark:";
+        } else if (status.equalsIgnoreCase("In Backlog")) {
+            symbol = ":interrobang:";
+        } else if (status.equalsIgnoreCase("In QA")) {
+            symbol = ":sonic:";
+        } else if (status.equalsIgnoreCase("In Progress") || status.equalsIgnoreCase("In Development")) {
+            symbol = ":ninja:";
+        } else if (status.equalsIgnoreCase("In Review")) {
+            symbol = ":time:";
+        }else if (status.equalsIgnoreCase("Analysis") || status.equalsIgnoreCase("Ready for Dev")) {
+            symbol = ":loading:";
+        }
+        return symbol;
+    }
 
     public String assignATicket(String jiraTicket, String asignee) throws InterruptedException {
         String URL = jiraUrl + "/issue/" + jiraTicket + "/assignee";
