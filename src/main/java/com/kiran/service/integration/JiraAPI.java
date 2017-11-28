@@ -124,8 +124,8 @@ public class JiraAPI {
             symbol = ":ninja:";
         } else if (status.equalsIgnoreCase("In Review")) {
             symbol = ":time:";
-        }else if (status.equalsIgnoreCase("Analysis") || status.equalsIgnoreCase("Ready for Dev")) {
-            symbol = ":loading:";
+        }else if (status.equalsIgnoreCase("Analysis") || status.equalsIgnoreCase("Ready for Dev") || status.equalsIgnoreCase("To Do")) {
+            symbol = ":exclamation:";
         }
         return symbol;
     }

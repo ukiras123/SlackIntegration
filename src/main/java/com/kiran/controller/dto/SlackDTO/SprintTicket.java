@@ -10,17 +10,35 @@ public class SprintTicket implements Comparable<SprintTicket>{
     private String summary;
     private String assigneeName;
     private String status;
+    private Integer order;
 
     public SprintTicket(String ticket, String summary, String assigneeName, String status) {
         this.ticket = ticket;
         this.summary = summary;
         this.assigneeName = assigneeName;
         this.status = status;
+        if (status.equalsIgnoreCase("Done")) {
+            this.order = 1;
+        } else if (status.equalsIgnoreCase("In Qa")) {
+            this.order = 2;
+        }else if (status.equalsIgnoreCase("In Review")) {
+            this.order = 3;
+        }else if (status.equalsIgnoreCase("In Development")) {
+            this.order = 4;
+        } else if (status.equalsIgnoreCase("In Progress")) {
+            this.order = 4;
+        } else {
+            this.order = 5;
+        }
     }
 
     @Override
     public int compareTo(SprintTicket o) {
-        int last = this.status.compareTo(o.status);
+        int last = this.order.compareTo(o.order);
+        if (last!=0) {
+            return last;
+        }
+        last = this.status.compareTo(o.status);
         return last;
     }
 
