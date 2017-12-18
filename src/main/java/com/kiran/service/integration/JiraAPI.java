@@ -88,7 +88,7 @@ public class JiraAPI {
         for (int i = 0; i < jsonArray.length(); i++) {
             if (i == 0) {
                 sprintEndDate = jsonArray.getJSONObject(i).getJSONObject("fields").getJSONArray("customfield_10000").get(0).toString();
-                daysLeft = getJiraDaysLeft(sprintEndDate);
+                daysLeft = getJiraDaysLeft(sprintEndDate) + 2;
             }
             HashMap<String, String> ticketDetail = new HashMap<>();
             String keyValue = jsonArray.getJSONObject(i).getString("key");
@@ -105,8 +105,8 @@ public class JiraAPI {
             ticketList.add(tempTicket);
         }
         Collections.sort(ticketList);
-        String finalString = ">*---------- Welcome to ARGO ---------- *\n";
-        finalString += ">* Total: " + totalTickets + ", Done: " + doneTickets + ", `" + daysLeft + "` to go." + " ---------- *\n";
+        String finalString = ">*---------- Welcome to ARGO ----------*\n";
+        finalString += ">*Total: " + totalTickets + ", Done: " + doneTickets + ", `" + daysLeft + "` to go." + "*\n";
         if (showAll == false) {
             for (SprintTicket ticket : ticketList) {
                 String symbol = getSymbol(ticket.getStatus());
