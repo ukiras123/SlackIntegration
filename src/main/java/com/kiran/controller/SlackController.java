@@ -457,7 +457,39 @@ public class SlackController {
                 System.out.println("invalid");
             }
             String replayMessage = duckService.giveDuckCalculation(giverUserName, receiverUserName.substring(1, receiverUserName.length()));
-            SlackResponseAttachment response = slackService.createSlackResponseSprintYesNo(replayMessage);
+            SlackResponse response = new SlackResponse(replayMessage);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /give-duck @userName");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+    @RequestMapping(value = "/duck/myduck", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> myDuck(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String replayMessage = duckService.getMyDuckDetail(userName);
+            SlackResponse response = new SlackResponse(replayMessage);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /give-duck @userName");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+    @RequestMapping(value = "/duck/duckwinner", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> duckHistory(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String giverUserName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String replayMessage = duckService.geDuckWinner();
+            SlackResponse response = new SlackResponse(replayMessage);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());

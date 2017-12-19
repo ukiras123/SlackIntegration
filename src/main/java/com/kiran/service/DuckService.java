@@ -75,4 +75,16 @@ public class DuckService {
             }
         }
     }
+
+    public String geDuckWinner() {
+        return "I am still under construction. Come back soon.";
+    }
+
+    public String getMyDuckDetail(String userName) {
+        DuckEntity user = readByUserName(userName);
+        if (user.getTotalDuck() >= 4) {
+            return "You have `"+user.getTotalDuck()+"` :duck:. Be generous to share";
+        }
+        return "You have `"+user.getTotalDuck()+"` :duck:. Work hard to earn more.";
+    }
 }
