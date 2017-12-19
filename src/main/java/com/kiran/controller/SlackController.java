@@ -454,8 +454,9 @@ public class SlackController {
             String[] splited = text.split("\\s+");
             String receiverUserName = splited[0];
             if (!receiverUserName.contains("@")) {
-                System.out.println("invalid");
-            }
+                SlackResponse response = new SlackResponse("Please try again. Specify username. eg: @kiran");
+                response.setResponse_type("private");
+                return new ResponseEntity<>(response, null, HttpStatus.OK);            }
             String replayMessage = duckService.giveDuckCalculation(giverUserName, receiverUserName.substring(1, receiverUserName.length()));
             SlackResponse response = new SlackResponse(replayMessage);
             return new ResponseEntity<>(response, null, HttpStatus.OK);

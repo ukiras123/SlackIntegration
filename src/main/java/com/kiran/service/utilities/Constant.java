@@ -46,7 +46,7 @@ public class Constant {
                 "What’s your secret? Your output is impressive, to say the least.",
                 "Wow! Nice work. ",
                 "Your work ethic is enviable.",
-                "nbsp;I just wanted to let you know how much you mean to the team.",
+                "I just wanted to let you know how much you mean to the team.",
                 "How did this place ever operate without you?!",
                 "I know I’ve been busy lately, but I just had to tell you what a great employee you are.",
                 "You play a crucial role in our company’s success.",

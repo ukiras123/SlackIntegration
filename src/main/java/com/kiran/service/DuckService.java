@@ -71,7 +71,7 @@ public class DuckService {
                 addUpdateDuck(receiverDTO);
                 return ">Congratulations <@" + receiverUserName + ">, you just got a new duck from <@" + giverUserName + ">.\n" +
                         ">You have now `" + receiverDTO.getTotalDuck() + "` :duck:. Good job.\n"+
-                        "*" + Constant.getACompliment() + " <@"+receiverUserName+">*" ;
+                        "*" + Constant.getACompliment() +"*" ;
             }
         }
     }
@@ -83,7 +83,7 @@ public class DuckService {
     public String getMyDuckDetail(String userName) {
         DuckEntity user = readByUserName(userName);
         if (user.getTotalDuck() >= 4) {
-            return "You have `"+user.getTotalDuck()+"` :duck:. Be generous to share";
+            return "You have `"+user.getTotalDuck()+"` :duck:. Be generous to share.";
         }
         return "You have `"+user.getTotalDuck()+"` :duck:. Work hard to earn more.";
     }
