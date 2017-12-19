@@ -5,6 +5,7 @@ import com.kiran.controller.dto.SlackDTO.SlackResponseAttachment;
 import com.kiran.model.entity.RetroEntity;
 import com.kiran.model.response.ReadAllRetroResponse;
 import com.kiran.model.response.SlackResponse;
+import com.kiran.service.DuckService;
 import com.kiran.service.RetroService;
 import com.kiran.service.SlackService;
 import com.kiran.service.exception.InvalidMove;
@@ -48,6 +49,9 @@ public class SlackController {
 
     @Autowired
     private SlackService slackService;
+
+    @Autowired
+    private DuckService duckService;
 
     @Autowired
     private JiraAPI jiraAPI;
@@ -438,8 +442,29 @@ public class SlackController {
             response.setReplace_original(true);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
+    }
 
 
+    @RequestMapping(value = "/duck/give", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> giveDuck(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String giverUserName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            String[] splited = text.split("\\s+");
+            String receiverUserName = splited[0];
+            if (!receiverUserName.contains("@")) {
+                System.out.println("invalid");
+            }
+            String replayMessage = duckService.giveDuckCalculation(giverUserName, receiverUserName.substring(1, receiverUserName.length()));
+            SlackResponseAttachment response = slackService.createSlackResponseSprintYesNo(replayMessage);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /give-duck @userName");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
     }
 
 

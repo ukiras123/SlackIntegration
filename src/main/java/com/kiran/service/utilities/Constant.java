@@ -7,7 +7,7 @@ import java.util.Random;
  */
 public class Constant {
 
-    public String getACompliment() {
+    public static String getACompliment() {
         String[] compliments = {"Having you on the team makes a huge difference. ",
                 "You always find a way to get it done — and done well!",
                 "It’s really admirable how you always see projects through from conception to completion.",

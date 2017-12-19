@@ -35,3 +35,12 @@ CREATE TABLE retro_detail (
   retro_message varchar(100) NOT NULL,
   is_active boolean NOT NULL
   );
+
+
+USE users;
+
+CREATE TABLE duck_log (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_name varchar(100) NOT NULL,
+  total_duck int NOT NULL
+  );

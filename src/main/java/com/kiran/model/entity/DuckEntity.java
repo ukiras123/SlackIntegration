@@ -7,7 +7,7 @@ import javax.persistence.*;
  */
 
 @Entity
-@Table(name="retro_detail")
+@Table(name="duck_log")
 public class DuckEntity {
 
     @Id
@@ -18,14 +18,14 @@ public class DuckEntity {
     private String userName;
 
     @Column(name = "total_duck")
-    private int total_duck;
+    private int totalDuck;
 
     public DuckEntity() {
     }
 
-    public DuckEntity(String userName, int total_duck) {
+    public DuckEntity(String userName, int totalDuck) {
         this.userName = userName;
-        this.total_duck = total_duck;
+        this.totalDuck = totalDuck;
     }
 
     public Long getId() {
@@ -44,11 +44,11 @@ public class DuckEntity {
         this.userName = userName;
     }
 
-    public int getTotal_duck() {
-        return total_duck;
+    public int getTotalDuck() {
+        return totalDuck;
     }
 
-    public void setTotal_duck(int total_duck) {
-        this.total_duck = total_duck;
+    public void setTotalDuck(int totalDuck) {
+        this.totalDuck = totalDuck;
     }
 }
