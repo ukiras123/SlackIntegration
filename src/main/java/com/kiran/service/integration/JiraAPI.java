@@ -88,7 +88,7 @@ public class JiraAPI {
         for (int i = 0; i < jsonArray.length(); i++) {
             if (i == 0) {
                 sprintEndDate = jsonArray.getJSONObject(i).getJSONObject("fields").getJSONArray("customfield_10000").get(0).toString();
-                daysLeft = getJiraDaysLeft(sprintEndDate) + 2;
+                daysLeft = getJiraDaysLeft(sprintEndDate);
             }
             HashMap<String, String> ticketDetail = new HashMap<>();
             String keyValue = jsonArray.getJSONObject(i).getString("key");
@@ -201,8 +201,8 @@ public class JiraAPI {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        long dateDiff = getDateDiff(new Date(), extractedDate, TimeUnit.DAYS);
-        return dateDiff + " days";
+        long dateDiff = getDateDiff(new Date(), extractedDate, TimeUnit.DAYS) + 1;
+        return dateDiff + " more day(s)";
     }
 
     private Date extractDate(String text, String regex) throws ParseException {
