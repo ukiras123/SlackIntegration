@@ -382,7 +382,7 @@ public class SlackController {
             String text = utilities.trimString(formVars.get("text").toString(), 1);
             String sprint = jiraAPI.getArgoSprintDetail(false);
             String sprintDetail = new SlackResponse(sprint).getText();
-            SlackResponseAttachment response = slackService.createSlackResponseSprintYesNo(sprintDetail);
+            SlackResponseAttachment response = slackService.createSlackResponseSprintYesNo(sprintDetail, "sprint");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -391,6 +391,25 @@ public class SlackController {
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
     }
+
+    @RequestMapping(value = "/jira/sprint/typhoon", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> getSprintDetailTyphoon(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            String sprint = jiraAPI.getTyphoonSprintDetail(false);
+            String sprintDetail = new SlackResponse(sprint).getText();
+            SlackResponseAttachment response = slackService.createSlackResponseSprintYesNo(sprintDetail, "typsprint");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again.");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
 
     @RequestMapping(value = "/callback", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -418,6 +437,17 @@ public class SlackController {
             } else if (callback_id.equalsIgnoreCase("sprint")) {
                 if (isYes == true) {
                     String updatedSprint = jiraAPI.getArgoSprintDetail(true);
+                    finalString = updatedSprint;
+                } else {
+                    finalString = originalMessage;
+                }
+                SlackResponse response = new SlackResponse(finalString);
+                response.setReplace_original(true);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+
+            }  else if (callback_id.equalsIgnoreCase("typsprint")) {
+                if (isYes == true) {
+                    String updatedSprint = jiraAPI.getTyphoonSprintDetail(true);
                     finalString = updatedSprint;
                 } else {
                     finalString = originalMessage;

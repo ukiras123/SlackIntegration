@@ -123,6 +123,57 @@ public class JiraAPI {
         return finalString + getMessage(totalTickets, doneTickets);
     }
 
+    public String getTyphoonSprintDetail(boolean showAll) throws InterruptedException {
+        logger.info("inside getTyphoonSprintDetail ---------");
+        String URL = jiraUrl + "/search";
+        String jiraTicketUrl = "https://jira.oceanx.com/browse/";
+        String payload = "{\"jql\":\"project = Typhoon AND issuetype in (Bug, Story, Task) and sprint in openSprints() ORDER BY status \",\"fields\":[\"summary\",\"status\",\"assignee\",\"customfield_10008\",\"customfield_10000\"]}";
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Basic " + getBasicAuth());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<String>(payload, headers);
+        ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.POST, request, String.class);
+        JSONObject jObject = new JSONObject(response);
+        String strBody = jObject.getString("body");
+        JSONObject jBody = new JSONObject(strBody);
+        int totalTickets = jBody.getInt("total");
+        int doneTickets = 0;
+        JSONArray jsonArray = jBody.getJSONArray("issues");
+        List<SprintTicket> ticketList = new LinkedList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            HashMap<String, String> ticketDetail = new HashMap<>();
+            String keyValue = jsonArray.getJSONObject(i).getString("key");
+            String summaryValue = jsonArray.getJSONObject(i).getJSONObject("fields").getString("summary");
+            String assigneeNameValue = "N/A";
+            if (!jsonArray.getJSONObject(i).getJSONObject("fields").isNull("assignee")) {
+                assigneeNameValue = jsonArray.getJSONObject(i).getJSONObject("fields").getJSONObject("assignee").getString("displayName");
+            }
+            String statusValue = jsonArray.getJSONObject(i).getJSONObject("fields").getJSONObject("status").getString("name");
+            if (statusValue.equalsIgnoreCase("DONE")) {
+                doneTickets++;
+            }
+            SprintTicket tempTicket = new SprintTicket(keyValue, summaryValue, assigneeNameValue, statusValue);
+            ticketList.add(tempTicket);
+        }
+        Collections.sort(ticketList);
+        String finalString = ">*---------- Welcome to TYPHOON ----------*\n";
+        finalString += ">*Total: " + totalTickets + ", Done: " + doneTickets + "*\n";
+        if (showAll == false) {
+            for (SprintTicket ticket : ticketList) {
+                String symbol = getSymbol(ticket.getStatus());
+                String ticketCode = ticket.getTicket();
+                finalString += "*" + createHyperlink(jiraTicketUrl + ticketCode, ticketCode) + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     " + symbol + "\n";
+            }
+        } else {
+            for (SprintTicket ticket : ticketList) {
+                String symbol = getSymbol(ticket.getStatus());
+                String ticketCode = ticket.getTicket();
+                finalString += "*" + createHyperlink(jiraTicketUrl + ticketCode, ticketCode) + "*   *\"" + ticket.getStatus() + "\"*   *" + ticket.getAssigneeName() + "*     " + symbol + "\n     " + ticket.getSummary() + "\n";
+            }
+        }
+        return finalString + getMessage(totalTickets, doneTickets);
+    }
 
     private String getSymbol(String status) {
         String symbol = "";

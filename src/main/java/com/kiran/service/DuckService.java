@@ -77,9 +77,17 @@ public class DuckService {
     }
 
     public String geDuckWinner() {
-        return "I am still under construction. Come back soon.";
+        List<DuckEntity> entities = duckDao.findByTotalDuck();
+        if (entities == null) {
+            return "There is not any winner";
+        } else {
+            String user = "";
+            for (DuckEntity e : entities) {
+                user += "><@"+e.getUserName()+"> : "+e.getTotalDuck()+" :duck: \n";
+            }
+            return "*Top 3 Duck Holders:*\n" + user;
+        }
     }
-
     public String getMyDuckDetail(String userName) {
         DuckEntity user = readByUserName(userName);
         if (user.getTotalDuck() >= 4) {
