@@ -76,6 +76,23 @@ public class DuckService {
         }
     }
 
+    public boolean hasEnoughDuck(String userName) {
+        DuckEntity user = readByUserName(userName);
+        return user.getTotalDuck() >= 1;
+    }
+
+    public void giveTakeDuck(String giverUserName, String receiverUserName)
+    {
+        DuckEntity giver = readByUserName(giverUserName);
+        DuckEntity receiver = readByUserName(receiverUserName);
+        DuckDTO giverDTO = duckTranslator.entityToDTO(giver);
+        DuckDTO receiverDTO = duckTranslator.entityToDTO(receiver);
+        giverDTO.removeDuck();
+        receiverDTO.addDuck();
+        addUpdateDuck(giverDTO);
+        addUpdateDuck(receiverDTO);
+    }
+
     public String geDuckWinner() {
         List<DuckEntity> entities = duckDao.findByTotalDuck();
         if (entities == null) {

@@ -421,6 +421,7 @@ public class SlackController {
         String responseUrl = jObject.getString("response_url");
         String originalMessage = jObject.getJSONObject("original_message").getString("text");
         String tempWord = originalMessage.split("\n")[0];
+        String user = jObject.getJSONObject("user").getString("name");
         String finalString = "";
         try {
             if (callback_id.equalsIgnoreCase("dictionary")) {
@@ -445,7 +446,7 @@ public class SlackController {
                 response.setReplace_original(true);
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
 
-            }  else if (callback_id.equalsIgnoreCase("typsprint")) {
+            } else if (callback_id.equalsIgnoreCase("typsprint")) {
                 if (isYes == true) {
                     String updatedSprint = jiraAPI.getTyphoonSprintDetail(true);
                     finalString = updatedSprint;
@@ -454,6 +455,32 @@ public class SlackController {
                 }
                 SlackResponse response = new SlackResponse(finalString);
                 response.setReplace_original(true);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            } else if (callback_id.equalsIgnoreCase("stealduck")) {
+                if (!originalMessage.contains(user)) {
+                    if (isYes == true) {
+                        String message = originalMessage + ":white_check_mark:";
+                        finalString = message;
+                    } else {
+                        String message = originalMessage + ":x:";
+                        finalString = message;
+                    }
+                    if (utilities.countNumberOfSubstring(finalString, ":x:") >= 3) {
+                        SlackResponse response = new SlackResponse("*You did not get enough support for this steal.*");
+                        response.setReplace_original(true);
+                        return new ResponseEntity<>(response, null, HttpStatus.OK);
+                    } else if (utilities.countNumberOfSubstring(finalString, ":white_check_mark:") >= 3) {
+                        String giver = utilities.extractString(originalMessage.substring(0, 20), "(?<=-@)(.*)(?=-)");
+                        String receiver = utilities.extractString(originalMessage.substring(24), "(?<=-@)(.*)(?=-)");
+                        duckService.giveTakeDuck(giver, receiver);
+                        SlackResponse response = new SlackResponse("*Congratulations <@" + receiver + ">, you successfully stole a duck from <@" + giver + "> :gun:.*");
+                        response.setReplace_original(true);
+                        return new ResponseEntity<>(response, null, HttpStatus.OK);
+                    }
+                } else {
+                    finalString = originalMessage;
+                }
+                SlackResponseAttachment response = slackService.createDuckVote(finalString, "stealduck");
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             } else {
                 if (isYes == true) {
@@ -486,17 +513,48 @@ public class SlackController {
             if (!receiverUserName.contains("@")) {
                 SlackResponse response = new SlackResponse("Please try again. Specify username. eg: @kiran");
                 response.setResponse_type("private");
-                return new ResponseEntity<>(response, null, HttpStatus.OK);            }
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
             String replayMessage = duckService.giveDuckCalculation(giverUserName, receiverUserName.substring(1, receiverUserName.length()));
             SlackResponse response = new SlackResponse(replayMessage);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
-            SlackResponse response = new SlackResponse("Something went wrong, please try again. /give-duck @userName");
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /props @userName");
             response.setResponse_type("private");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         }
     }
+
+
+    @RequestMapping(value = "/duck/take", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> takeDuck(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String receiverUserName = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            String[] splited = text.split("\\s+");
+            String giverUserName = splited[0];
+            if (!giverUserName.contains("@")) {
+                SlackResponse response = new SlackResponse("Please try again. Specify username. eg: @kiran");
+                response.setResponse_type("private");
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
+            giverUserName = giverUserName.substring(1, giverUserName.length());
+            if (!duckService.hasEnoughDuck(giverUserName)) {
+                SlackResponse response = new SlackResponse("><@" + giverUserName + "> does not have a single duck that you can steal.");
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
+            SlackResponseAttachment response = slackService.createDuckVote(">*-@" + receiverUserName + "-* wants to steal a duck from *-@" + giverUserName + "-*\n", "stealduck");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /un-props @userName");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
 
     @RequestMapping(value = "/duck/myduck", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})

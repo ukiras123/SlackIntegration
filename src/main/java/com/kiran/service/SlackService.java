@@ -165,4 +165,17 @@ public class SlackService {
         return responseAttachment;
     }
 
+    public SlackResponseAttachment createDuckVote(String text, String callBack) {
+        SlackAction action1 = new SlackAction("Support", "button", "primary", "yes");
+        SlackAction action2 = new SlackAction("Do not support", "button", "danger", "no");
+        List<SlackAction> actions = new LinkedList<>();
+        actions.add(action1);
+        actions.add(action2);
+        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("You need at least three votes from your team to steal the duck.","You are unable to choose Yes or No",callBack, actions);
+        List<SlackInteractiveAttachment> attachments = new LinkedList<>();
+        attachments.add(attachment);
+        SlackResponseAttachment responseAttachment = new SlackResponseAttachment(text, attachments);
+        return responseAttachment;
+    }
+
 }

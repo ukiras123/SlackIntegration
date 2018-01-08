@@ -14,11 +14,13 @@ public class SlackResponseAttachment<T> {
 
     private List<T> attachments;
 
+
     public SlackResponseAttachment(String text, List<T> attachments) {
         this.text = text;
         this.response_type = "in_channel";
         this.attachments = attachments;
     }
+
 
     public String getText() {
         return text;
