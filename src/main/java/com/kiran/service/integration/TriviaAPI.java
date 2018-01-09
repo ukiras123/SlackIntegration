@@ -50,12 +50,10 @@ public class TriviaAPI {
         Map<String, String> header = new HashMap<>();
         String amountFilter = "amount=1&";
         String categoryFilter = "category="+categoryId+"&" ;
-        String tokenFilter = "token="+triviaToken+"&" ;
-        String finalUrl = triviaUrl + amountFilter + categoryFilter + tokenFilter;
+        String finalUrl = triviaUrl + amountFilter + categoryFilter;
         JSONObject jBody = apiGetCall(finalUrl, header);
         int responseCount = jBody.getJSONArray("results").length();
         while (responseCount == 0) {
-            resetToken();
             jBody = apiGetCall(finalUrl, header);
             responseCount = jBody.getJSONArray("results").length();
             logger.info("-------------  Response was empty so reset token  --------------------");
