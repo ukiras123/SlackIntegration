@@ -93,6 +93,22 @@ public class DuckService {
         addUpdateDuck(receiverDTO);
     }
 
+    public void giveDuck(String user)
+    {
+        DuckEntity duckUser = readByUserName(user);
+        DuckDTO duckUserDTO = duckTranslator.entityToDTO(duckUser);
+        duckUserDTO.addDuck();
+        addUpdateDuck(duckUserDTO);
+    }
+
+    public void takeDuck(String user)
+    {
+        DuckEntity duckUser = readByUserName(user);
+        DuckDTO duckUserDTO = duckTranslator.entityToDTO(duckUser);
+        duckUserDTO.removeDuck();
+        addUpdateDuck(duckUserDTO);
+    }
+
     public String geDuckWinner() {
         List<DuckEntity> entities = duckDao.findByTotalDuck();
         if (entities == null) {

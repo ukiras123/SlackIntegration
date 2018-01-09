@@ -12,6 +12,7 @@ import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.DictionaryAPI;
 import com.kiran.service.integration.JiraAPI;
 import com.kiran.service.integration.RandomAPI;
+import com.kiran.service.integration.TriviaAPI;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
 import com.kiran.translator.RetroTranslator;
@@ -61,6 +62,9 @@ public class SlackController {
 
     @Autowired
     private RandomAPI randomAPI;
+
+    @Autowired
+    private TriviaAPI triviaAPI;
 
     @Autowired
     private SlackAsyncService slackAsyncService;
@@ -456,7 +460,24 @@ public class SlackController {
                 SlackResponse response = new SlackResponse(finalString);
                 response.setReplace_original(true);
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
-            } else if (callback_id.equalsIgnoreCase("stealduck")) {
+            } else if (callback_id.equalsIgnoreCase("triviaFinal")) {
+                    String reply = "";
+                    if (isYes == true) {
+                        reply = ">*Congratulations, <@"+user+">  you just mined a new :duck:*";
+                        duckService.giveDuck(user);
+                    } else {
+                        reply = ">*Sorry <@"+user+">, you just lost your duck*";
+                        duckService.takeDuck(user);
+                    }
+                    SlackResponse response = new SlackResponse(reply);
+                    response.setReplace_original(true);
+                    return new ResponseEntity<>(response, null, HttpStatus.OK);
+            } else if (callback_id.equalsIgnoreCase("triviaChoice")) {
+                    int choiceId = Integer.parseInt(jObject.getJSONArray("actions").getJSONObject(0).getString("value"));
+                    JSONObject jBody = triviaAPI.getTrivia(choiceId);
+                    SlackResponseAttachment response = slackService.createTrivia(user,jBody,"triviaFinal");
+                    return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }else if (callback_id.equalsIgnoreCase("stealduck")) {
                 if (!originalMessage.contains(user)) {
                     if (isYes == true) {
                         String message = originalMessage + ":white_check_mark:";
@@ -579,6 +600,21 @@ public class SlackController {
             String giverUserName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String replayMessage = duckService.geDuckWinner();
             SlackResponse response = new SlackResponse(replayMessage);
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /give-duck @userName");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+    @RequestMapping(value = "/trivia/question", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> triviaQuestion(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String user = utilities.trimString(formVars.get("user_name").toString(), 1);
+            SlackResponseAttachment response = slackService.createTriviaChoice(user, "triviaChoice");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());

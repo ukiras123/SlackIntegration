@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +36,9 @@ public class SlackService {
 
     @Autowired
     private YelpAPI yelpAPI;
+
+    @Autowired
+    private Utilities utilities;
 
     public HashMap  getJiraResponse(String jiraTicket)
     {
@@ -178,4 +182,44 @@ public class SlackService {
         return responseAttachment;
     }
 
+    public SlackResponseAttachment createTrivia(String user, JSONObject jBody, String callBack) {
+        String question = jBody.getJSONArray("results").getJSONObject(0).getString("question");
+        String correctAnswer = jBody.getJSONArray("results").getJSONObject(0).getString("correct_answer");
+        String incorrectAnswer1 = jBody.getJSONArray("results").getJSONObject(0).getJSONArray("incorrect_answers").get(0).toString();
+        String incorrectAnswer2 = jBody.getJSONArray("results").getJSONObject(0).getJSONArray("incorrect_answers").get(1).toString();
+        String incorrectAnswer3 = jBody.getJSONArray("results").getJSONObject(0).getJSONArray("incorrect_answers").get(2).toString();
+        String choices[] = {correctAnswer, incorrectAnswer1, incorrectAnswer2, incorrectAnswer3};
+        utilities.shuffleArray(choices);
+        List<SlackAction> actions = new LinkedList<>();
+        for (String k: choices) {
+            if (k.equalsIgnoreCase(correctAnswer)) {
+                SlackAction action = new SlackAction(k, "button", "primary", "yes");
+                actions.add(action);
+            } else {
+                SlackAction action = new SlackAction(k, "button", "primary", "no");
+                actions.add(action);
+            }
+        }
+        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("You will get a new duck for a correct answer and lose onc if its wrong.","You are unable to choose Yes or No",callBack, actions);
+        List<SlackInteractiveAttachment> attachments = new LinkedList<>();
+        attachments.add(attachment);
+        SlackResponseAttachment responseAttachment = new SlackResponseAttachment("*"+question+"*", attachments);
+        return responseAttachment;
+    }
+
+    public SlackResponseAttachment createTriviaChoice(String user, String callBack) {
+        List<SlackAction> actions = new LinkedList<>();
+        List<Utilities.TRIVIA_CATEGORIES> triviaCategories = Arrays.asList(Utilities.TRIVIA_CATEGORIES.values());
+
+        for (Utilities.TRIVIA_CATEGORIES category: triviaCategories) {
+                SlackAction action = new SlackAction(category.getName(), "button", "primary", Integer.toString(category.getId()));
+                actions.add(action);
+        }
+
+        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("Select a Category.","You are unable to choose any",callBack, actions);
+        List<SlackInteractiveAttachment> attachments = new LinkedList<>();
+        attachments.add(attachment);
+        SlackResponseAttachment responseAttachment = new SlackResponseAttachment("*<@"+user+">, you only have once choice, make it the best choice.*", attachments);
+        return responseAttachment;
+    }
 }
