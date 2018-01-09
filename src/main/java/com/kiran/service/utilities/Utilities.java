@@ -96,8 +96,8 @@ public class Utilities {
         ScienceComputer("ScienceComputer", 18),
         Sports("Sports", 21),
         History("History", 23),
-        Vehicles("Vehicles", 28),
         ScienceGadgets("ScienceGadgets", 30);
+
         private String name;
         private int id;
 

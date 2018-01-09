@@ -200,7 +200,7 @@ public class SlackService {
                 actions.add(action);
             }
         }
-        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("You will get a new duck for a correct answer and lose onc if its wrong.","You are unable to choose Yes or No",callBack, actions);
+        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("You will get a new duck for a correct answer but lose one if its wrong.","You are unable to choose Yes or No",callBack, actions);
         List<SlackInteractiveAttachment> attachments = new LinkedList<>();
         attachments.add(attachment);
         SlackResponseAttachment responseAttachment = new SlackResponseAttachment("*"+question+"*", attachments);
@@ -219,7 +219,7 @@ public class SlackService {
         SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("Select a Category.","You are unable to choose any",callBack, actions);
         List<SlackInteractiveAttachment> attachments = new LinkedList<>();
         attachments.add(attachment);
-        SlackResponseAttachment responseAttachment = new SlackResponseAttachment("*<@"+user+">, you only have once choice, make it the best choice.*", attachments);
+        SlackResponseAttachment responseAttachment = new SlackResponseAttachment("*<@"+user+">, you only have one choice, make it the best choice.*", attachments);
         return responseAttachment;
     }
 }

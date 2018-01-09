@@ -54,9 +54,12 @@ public class TriviaAPI {
         String finalUrl = triviaUrl + amountFilter + categoryFilter + tokenFilter;
         JSONObject jBody = apiGetCall(finalUrl, header);
         int responseCount = jBody.getJSONArray("results").length();
-        if (responseCount == 0) {
+        while (responseCount == 0) {
             resetToken();
             jBody = apiGetCall(finalUrl, header);
+            responseCount = jBody.getJSONArray("results").length();
+            logger.info("-------------  Response was empty so reset token  --------------------");
+
         }
         return jBody;
     }

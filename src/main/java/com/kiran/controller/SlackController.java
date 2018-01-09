@@ -463,7 +463,7 @@ public class SlackController {
             } else if (callback_id.equalsIgnoreCase("triviaFinal")) {
                     String reply = "";
                     if (isYes == true) {
-                        reply = ">*Congratulations, <@"+user+">  you just mined a new :duck:*";
+                        reply = ">*Congratulations <@"+user+">,  you just mined a new :duck:*";
                         duckService.giveDuck(user);
                     } else {
                         reply = ">*Sorry <@"+user+">, you just lost your duck*";
