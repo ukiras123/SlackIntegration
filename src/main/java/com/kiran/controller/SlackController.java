@@ -491,8 +491,8 @@ public class SlackController {
                         response.setReplace_original(true);
                         return new ResponseEntity<>(response, null, HttpStatus.OK);
                     } else if (utilities.countNumberOfSubstring(finalString, ":white_check_mark:") >= 3) {
-                        String giver = utilities.extractString(originalMessage.substring(0, 20), "(?<=-@)(.*)(?=-)");
-                        String receiver = utilities.extractString(originalMessage.substring(24), "(?<=-@)(.*)(?=-)");
+                        String receiver= utilities.extractString(originalMessage.substring(0, 20), "(?<=-@)(.*)(?=-)");
+                        String giver = utilities.extractString(originalMessage.substring(24), "(?<=-@)(.*)(?=-)");
                         duckService.giveTakeDuck(giver, receiver);
                         SlackResponse response = new SlackResponse("*Congratulations <@" + receiver + ">, you successfully stole a duck from <@" + giver + "> :gun:.*");
                         response.setReplace_original(true);
