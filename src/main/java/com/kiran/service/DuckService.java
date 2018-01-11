@@ -81,6 +81,11 @@ public class DuckService {
         return user.getTotalDuck() >= 1;
     }
 
+    public int getDuckCount(String userName) {
+        DuckEntity user = readByUserName(userName);
+        return user.getTotalDuck();
+    }
+
     public void giveTakeDuck(String giverUserName, String receiverUserName)
     {
         DuckEntity giver = readByUserName(giverUserName);

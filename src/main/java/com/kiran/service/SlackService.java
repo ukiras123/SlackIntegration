@@ -216,10 +216,10 @@ public class SlackService {
                 actions.add(action);
         }
 
-        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("Select a Category.","You are unable to choose any",callBack, actions);
+        SlackInteractiveAttachment attachment = new SlackInteractiveAttachment("First, select a Category.","You are unable to choose any",callBack, actions);
         List<SlackInteractiveAttachment> attachments = new LinkedList<>();
         attachments.add(attachment);
-        SlackResponseAttachment responseAttachment = new SlackResponseAttachment("*<@"+user+">, you only have one choice, make it the best choice.*", attachments);
+        SlackResponseAttachment responseAttachment = new SlackResponseAttachment("*<@"+user+">, lets mine some :duck:.*", attachments);
         return responseAttachment;
     }
 }

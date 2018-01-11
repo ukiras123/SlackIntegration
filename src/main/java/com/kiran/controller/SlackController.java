@@ -353,10 +353,6 @@ public class SlackController {
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
-//            if (!(userName.equalsIgnoreCase("kiran"))) {
-//                SlackResponse response = new SlackResponse("You do not have enough rights for this call. Request your admin.", true);
-//                return new ResponseEntity<>(response, null, HttpStatus.OK);
-//            }
             String[] parts = null;
             if (text.length() > 2) {
                 parts = text.split(" ");
@@ -384,6 +380,7 @@ public class SlackController {
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(userName, "Argo Sprint: " + text);
             String sprint = jiraAPI.getArgoSprintDetail(false);
             String sprintDetail = new SlackResponse(sprint).getText();
             SlackResponseAttachment response = slackService.createSlackResponseSprintYesNo(sprintDetail, "sprint");
@@ -402,6 +399,7 @@ public class SlackController {
         try {
             String userName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(userName, "Typhoon Sprint: " + text);
             String sprint = jiraAPI.getTyphoonSprintDetail(false);
             String sprintDetail = new SlackResponse(sprint).getText();
             SlackResponseAttachment response = slackService.createSlackResponseSprintYesNo(sprintDetail, "typsprint");
@@ -529,6 +527,8 @@ public class SlackController {
         try {
             String giverUserName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(giverUserName, "Give duck: " + text);
+
             String[] splited = text.split("\\s+");
             String receiverUserName = splited[0];
             if (!receiverUserName.contains("@")) {
@@ -554,6 +554,7 @@ public class SlackController {
         try {
             String receiverUserName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(receiverUserName, "Stealing duck: " + text);
             String[] splited = text.split("\\s+");
             String giverUserName = splited[0];
             if (!giverUserName.contains("@")) {
@@ -614,6 +615,12 @@ public class SlackController {
     public ResponseEntity<?> triviaQuestion(@RequestBody MultiValueMap<String, String> formVars) {
         try {
             String user = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(user, "Mining: " + text);
+            if (duckService.getDuckCount(user) > 10) {
+                SlackResponse response = new SlackResponse("*You already have enough :duck:. Work hard if you want more.*");
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
             SlackResponseAttachment response = slackService.createTriviaChoice(user, "triviaChoice");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
