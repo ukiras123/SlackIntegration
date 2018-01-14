@@ -476,12 +476,13 @@ public class SlackController {
                     SlackResponseAttachment response = slackService.createTrivia(user,jBody,"triviaFinal");
                     return new ResponseEntity<>(response, null, HttpStatus.OK);
             }else if (callback_id.equalsIgnoreCase("stealduck")) {
+                logger.info("Inside steal duck------------------------------------");
                 if (!originalMessage.contains(user)) {
                     if (isYes == true) {
-                        String message = originalMessage + ":white_check_mark:";
+                        String message = originalMessage + "<@"+user+"> :white_check_mark:\n";
                         finalString = message;
                     } else {
-                        String message = originalMessage + ":x:";
+                        String message = originalMessage + "<@"+user+"> :x:\n";
                         finalString = message;
                     }
                     if (utilities.countNumberOfSubstring(finalString, ":x:") >= 3) {
@@ -622,6 +623,24 @@ public class SlackController {
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             }
             SlackResponseAttachment response = slackService.createTriviaChoice(user, "triviaChoice");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /give-duck @userName");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+    @RequestMapping(value = "/donate", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> donateNow(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String user = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(user, "Donating: " + text);
+            String donate = jiraAPI.createHyperlink("bit.ly/donateKiranBot", "DONATE");
+            SlackResponse response = new SlackResponse(">*Thanks for your support.*\n>*"+donate+"*");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());

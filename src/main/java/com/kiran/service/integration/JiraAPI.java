@@ -226,7 +226,7 @@ public class JiraAPI {
         }
     }
 
-    private String createHyperlink(String url, String hyperlinkText) {
+    public String createHyperlink(String url, String hyperlinkText) {
         return "<" + url + "|" + hyperlinkText + ">";
     }
 
