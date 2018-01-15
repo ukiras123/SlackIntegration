@@ -479,10 +479,10 @@ public class SlackController {
                 logger.info("Inside steal duck------------------------------------");
                 if (!originalMessage.contains(user)) {
                     if (isYes == true) {
-                        String message = originalMessage + "<@"+user+"> :white_check_mark:\n";
+                        String message = originalMessage + "*-@"+user+"-* :white_check_mark:\n";
                         finalString = message;
                     } else {
-                        String message = originalMessage + "<@"+user+"> :x:\n";
+                        String message = originalMessage + "*-@"+user+"-* :x:\n";
                         finalString = message;
                     }
                     if (utilities.countNumberOfSubstring(finalString, ":x:") >= 3) {
@@ -639,7 +639,7 @@ public class SlackController {
             String user = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
             slackAsyncService.logInDB(user, "Donating: " + text);
-            String donate = jiraAPI.createHyperlink("bit.ly/donateKiranBot", "DONATE");
+            String donate = jiraAPI.createHyperlink("http://bit.ly/kiranBotPool", "DONATE");
             SlackResponse response = new SlackResponse(">*Thanks for your support.*\n>*"+donate+"*");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
