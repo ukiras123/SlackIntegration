@@ -661,7 +661,7 @@ public class SlackController {
             String donate = jiraAPI.createHyperlink("http://bit.ly/kiranBotPool", "DONATE");
             String participate = jiraAPI.createHyperlink("https://goo.gl/forms/NAPMNsDF6yfZvOsX2", "Participate in Hackathon");
             String feedback = jiraAPI.createHyperlink("https://goo.gl/forms/yDvjgImsU6HdVs9l1", "Feedback");
-            SlackResponse response = new SlackResponse(">*How can you help?.*\n"
+            SlackResponse response = new SlackResponse(">*How can you help?*\n"
                     + ">*" + donate + "*\n"
                     + ">*" + contribute + "*\n"
                     + ">*" + participate + "*\n"
