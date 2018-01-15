@@ -459,30 +459,30 @@ public class SlackController {
                 response.setReplace_original(true);
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             } else if (callback_id.equalsIgnoreCase("triviaFinal")) {
-                    String reply = "";
-                    if (isYes == true) {
-                        reply = ">*Congratulations <@"+user+">,  you just mined a new :duck:*";
-                        duckService.giveDuck(user);
-                    } else {
-                        reply = ">*Sorry <@"+user+">, you just lost your duck*";
-                        duckService.takeDuck(user);
-                    }
-                    SlackResponse response = new SlackResponse(reply);
-                    response.setReplace_original(true);
-                    return new ResponseEntity<>(response, null, HttpStatus.OK);
+                String reply = "";
+                if (isYes == true) {
+                    reply = ">*Congratulations <@" + user + ">,  you just mined a new :duck:*";
+                    duckService.giveDuck(user);
+                } else {
+                    reply = ">*Sorry <@" + user + ">, you just lost your duck*";
+                    duckService.takeDuck(user);
+                }
+                SlackResponse response = new SlackResponse(reply);
+                response.setReplace_original(true);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
             } else if (callback_id.equalsIgnoreCase("triviaChoice")) {
-                    int choiceId = Integer.parseInt(jObject.getJSONArray("actions").getJSONObject(0).getString("value"));
-                    JSONObject jBody = triviaAPI.getTrivia(choiceId);
-                    SlackResponseAttachment response = slackService.createTrivia(user,jBody,"triviaFinal");
-                    return new ResponseEntity<>(response, null, HttpStatus.OK);
-            }else if (callback_id.equalsIgnoreCase("stealduck")) {
+                int choiceId = Integer.parseInt(jObject.getJSONArray("actions").getJSONObject(0).getString("value"));
+                JSONObject jBody = triviaAPI.getTrivia(choiceId);
+                SlackResponseAttachment response = slackService.createTrivia(user, jBody, "triviaFinal");
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            } else if (callback_id.equalsIgnoreCase("stealduck")) {
                 logger.info("Inside steal duck------------------------------------");
                 if (!originalMessage.contains(user)) {
                     if (isYes == true) {
-                        String message = originalMessage + "*-@"+user+"-* :white_check_mark:\n";
+                        String message = originalMessage + "*-@" + user + "-* :white_check_mark:\n";
                         finalString = message;
                     } else {
-                        String message = originalMessage + "*-@"+user+"-* :x:\n";
+                        String message = originalMessage + "*-@" + user + "-* :x:\n";
                         finalString = message;
                     }
                     if (utilities.countNumberOfSubstring(finalString, ":x:") >= 3) {
@@ -490,7 +490,7 @@ public class SlackController {
                         response.setReplace_original(true);
                         return new ResponseEntity<>(response, null, HttpStatus.OK);
                     } else if (utilities.countNumberOfSubstring(finalString, ":white_check_mark:") >= 3) {
-                        String receiver= utilities.extractString(originalMessage.substring(0, 20), "(?<=-@)(.*)(?=-)");
+                        String receiver = utilities.extractString(originalMessage.substring(0, 20), "(?<=-@)(.*)(?=-)");
                         String giver = utilities.extractString(originalMessage.substring(24), "(?<=-@)(.*)(?=-)");
                         duckService.giveTakeDuck(giver, receiver);
                         SlackResponse response = new SlackResponse("*Congratulations <@" + receiver + ">, you successfully stole a duck from <@" + giver + "> :gun:.*");
@@ -640,7 +640,52 @@ public class SlackController {
             String text = utilities.trimString(formVars.get("text").toString(), 1);
             slackAsyncService.logInDB(user, "Donating: " + text);
             String donate = jiraAPI.createHyperlink("http://bit.ly/kiranBotPool", "DONATE");
-            SlackResponse response = new SlackResponse(">*Thanks for your support.*\n>*"+donate+"*");
+            SlackResponse response = new SlackResponse(">*Thanks for your support.*\n>*" + donate + "*");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /give-duck @userName");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+    @RequestMapping(value = "/support", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> support(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String user = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(user, "Supporting: " + text);
+            String contribute = jiraAPI.createHyperlink("https://github.com/ukiras123/SlackIntegration", "Github Collaborate");
+            String donate = jiraAPI.createHyperlink("http://bit.ly/kiranBotPool", "DONATE");
+            String participate = jiraAPI.createHyperlink("https://goo.gl/forms/NAPMNsDF6yfZvOsX2", "Participate in Hackathon");
+            String feedback = jiraAPI.createHyperlink("https://goo.gl/forms/yDvjgImsU6HdVs9l1", "Feedback");
+            SlackResponse response = new SlackResponse(">*How can you help?.*\n"
+                    + ">*" + donate + "*\n"
+                    + ">*" + contribute + "*\n"
+                    + ">*" + participate + "*\n"
+                    + ">*" + feedback + "*\n");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            SlackResponse response = new SlackResponse("Something went wrong, please try again. /give-duck @userName");
+            response.setResponse_type("private");
+            return new ResponseEntity<>(response, null, HttpStatus.OK);
+        }
+    }
+
+    @RequestMapping(value = "/hackathon", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> hackathon(@RequestBody MultiValueMap<String, String> formVars) {
+        try {
+            String user = utilities.trimString(formVars.get("user_name").toString(), 1);
+            String text = utilities.trimString(formVars.get("text").toString(), 1);
+            slackAsyncService.logInDB(user, "Hackathon: " + text);
+            String participate = jiraAPI.createHyperlink("https://goo.gl/forms/NAPMNsDF6yfZvOsX2", "Register for Hackathon Now");
+            SlackResponse response = new SlackResponse(">*RSVP for 2018 OceanX Hackathon.*\n" +
+                    ">*" + "Remember that participation is the first step to win a challenge." + "*\n" +
+                    ">*" + participate + "*\n");
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage());
