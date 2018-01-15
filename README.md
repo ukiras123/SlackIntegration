@@ -5,4 +5,4 @@ Integrating different APIs to create a smart slack bot. Usage of Docker for depl
 
 
 
-[Note: If you want to collborate: send am email to ukiras@gmail.com or fork and create a PR.]
+[Note: If you want to collborate: send an email to ukiras@gmail.com or fork and create a PR.]
