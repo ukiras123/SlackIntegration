@@ -558,7 +558,7 @@ public class SlackController {
                     SlackResponse response = new SlackResponse(replayMessage);
                     return new ResponseEntity<>(response, null, HttpStatus.OK);
                 } else {
-                    String replayMessage = "**";
+                    String replayMessage = "*You can only prop your team once a day, please try again tomorrow.*";
                     SlackResponse response = new SlackResponse(replayMessage);
                     return new ResponseEntity<>(response, null, HttpStatus.OK);
                 }

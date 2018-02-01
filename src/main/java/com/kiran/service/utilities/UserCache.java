@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class UserCache {
 
-
     static LoadingCache<String, String> userCacheForChannelProp = CacheBuilder.newBuilder()
             .maximumSize(100)
             .expireAfterWrite(24, TimeUnit.HOURS)
@@ -35,5 +34,6 @@ public class UserCache {
     public String getFromChannelPropCache(String key) throws ExecutionException {
         return userCacheForChannelProp.get(key);
     }
+
 }
 
