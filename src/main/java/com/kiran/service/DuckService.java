@@ -54,22 +54,22 @@ public class DuckService {
     }
 
 
-    public String giveDuckCalculation(String giverUserName, String receiverUserName) {
+    public String giveDuckCalculation(String giverUserName, String receiverUserName, int totalDuck) {
         DuckEntity giver = readByUserName(giverUserName);
         DuckEntity receiver = readByUserName(receiverUserName);
         if (giverUserName.equalsIgnoreCase(receiverUserName)) {
             return "Come on now, you can not give :duck: to yourself. Don't try to cheat here. :angry:";
         } else {
-            if (giver.getTotalDuck() < 1) {
+            if (giver.getTotalDuck() < totalDuck) {
                 return "You do not have enough :duck: to give away. Work hard to earn. :grimacing:";
             } else {
                 DuckDTO giverDTO = duckTranslator.entityToDTO(giver);
                 DuckDTO receiverDTO = duckTranslator.entityToDTO(receiver);
-                giverDTO.removeDuck();
-                receiverDTO.addDuck();
+                giverDTO.setTotalDuck(giverDTO.getTotalDuck() - totalDuck);
+                receiverDTO.setTotalDuck(receiverDTO.getTotalDuck() + totalDuck);
                 addUpdateDuck(giverDTO);
                 addUpdateDuck(receiverDTO);
-                return ">Congratulations <@" + receiverUserName + ">, you just got a new duck from <@" + giverUserName + ">.\n" +
+                return ">Congratulations <@" + receiverUserName + ">, you just got `"+totalDuck+"` duck from <@" + giverUserName + ">.\n" +
                         ">You have now `" + receiverDTO.getTotalDuck() + "` :duck:. Good job.\n"+
                         "*" + Constant.getACompliment() +"*" ;
             }
@@ -103,6 +103,14 @@ public class DuckService {
         DuckEntity duckUser = readByUserName(user);
         DuckDTO duckUserDTO = duckTranslator.entityToDTO(duckUser);
         duckUserDTO.addDuck();
+        addUpdateDuck(duckUserDTO);
+    }
+
+    public void giveDuckWithNumber(String user, int number)
+    {
+        DuckEntity duckUser = readByUserName(user);
+        DuckDTO duckUserDTO = duckTranslator.entityToDTO(duckUser);
+        duckUserDTO.setTotalDuck(duckUserDTO.getTotalDuck() + number);
         addUpdateDuck(duckUserDTO);
     }
 

@@ -9,13 +9,12 @@ import com.kiran.service.DuckService;
 import com.kiran.service.RetroService;
 import com.kiran.service.SlackService;
 import com.kiran.service.exception.InvalidMove;
-import com.kiran.service.integration.DictionaryAPI;
-import com.kiran.service.integration.JiraAPI;
-import com.kiran.service.integration.RandomAPI;
-import com.kiran.service.integration.TriviaAPI;
+import com.kiran.service.integration.*;
+import com.kiran.service.utilities.Constant;
 import com.kiran.service.utilities.SlackAsyncService;
 import com.kiran.service.utilities.Utilities;
 import com.kiran.translator.RetroTranslator;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +55,9 @@ public class SlackController {
 
     @Autowired
     private JiraAPI jiraAPI;
+
+    @Autowired
+    private SlackAPI slackAPI;
 
     @Autowired
     private DictionaryAPI dictionaryAPI;
@@ -526,18 +528,37 @@ public class SlackController {
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> giveDuck(@RequestBody MultiValueMap<String, String> formVars) {
         try {
+
+
             String giverUserName = utilities.trimString(formVars.get("user_name").toString(), 1);
             String text = utilities.trimString(formVars.get("text").toString(), 1);
             slackAsyncService.logInDB(giverUserName, "Give duck: " + text);
 
             String[] splited = text.split("\\s+");
             String receiverUserName = splited[0];
+            int addNumber = 1;
+            if (splited.length >= 2) {
+                if (StringUtils.isNumeric(splited[1])) {
+                    addNumber = Integer.parseInt(splited[1]);
+                }
+            }
+
+            if (receiverUserName.equalsIgnoreCase("@channel")) {
+                String channelId = formVars.get("channel_id").get(0);
+                slackAsyncService.updateDucks(channelId, addNumber);
+                String replayMessage = ">Congratulations, <@" + giverUserName + "> just gave `"+addNumber+"` :duck: to everyone here as a token of appreciation.\n" +
+                        "*" + Constant.getATeamCompliment() + "*";
+                SlackResponse response = new SlackResponse(replayMessage);
+                return new ResponseEntity<>(response, null, HttpStatus.OK);
+            }
+
+
             if (!receiverUserName.contains("@")) {
                 SlackResponse response = new SlackResponse("Please try again. Specify username. eg: @kiran");
                 response.setResponse_type("private");
                 return new ResponseEntity<>(response, null, HttpStatus.OK);
             }
-            String replayMessage = duckService.giveDuckCalculation(giverUserName, receiverUserName.substring(1, receiverUserName.length()));
+            String replayMessage = duckService.giveDuckCalculation(giverUserName, receiverUserName.substring(1, receiverUserName.length()), addNumber);
             SlackResponse response = new SlackResponse(replayMessage);
             return new ResponseEntity<>(response, null, HttpStatus.OK);
         } catch (Exception e) {

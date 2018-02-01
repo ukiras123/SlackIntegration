@@ -3,9 +3,11 @@ package com.kiran.service.utilities;
 import com.kiran.controller.dto.SlackDTO.SlackResponseAttachment;
 import com.kiran.controller.dto.UserLogDTO.UserLogDTO;
 import com.kiran.model.response.SlackResponse;
+import com.kiran.service.DuckService;
 import com.kiran.service.SlackService;
 import com.kiran.service.UserLogService;
 import com.kiran.service.exception.InvalidMove;
+import com.kiran.service.integration.SlackAPI;
 import com.kiran.service.regressionTest.RegressionTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -19,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -38,6 +41,13 @@ public class SlackAsyncService {
 
     @Autowired
     private RegressionTest regressionTest;
+
+    @Autowired
+    private DuckService duckService;
+
+    @Autowired
+    private SlackAPI slackAPI;
+
 
     @Async
     public void regressionTestResponse(String apiName, String branch, String email, String responseUrl) {
@@ -99,5 +109,20 @@ public class SlackAsyncService {
         String timeStamp = dateFormat.format(date);
         UserLogDTO userLogDTO = new UserLogDTO(userName,timeStamp,text);
         userLogService.createUserLog(userLogDTO);
+    }
+
+    @Async
+    public void updateDucks(String channelId, int addNumber) throws InterruptedException {
+        if (channelId.charAt(0) == 'G') {
+            ArrayList<String> users = slackAPI.getUsersFromPrivateGroup(channelId);
+            for (String user: users) {
+                duckService.giveDuckWithNumber(user, addNumber);
+            }
+        } else {
+            ArrayList<String> users = slackAPI.getUsersFromPublicGroup(channelId);
+            for (String user: users) {
+                duckService.giveDuckWithNumber(user, addNumber);
+            }
+        }
     }
 }

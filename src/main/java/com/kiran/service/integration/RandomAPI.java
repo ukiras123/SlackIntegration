@@ -7,12 +7,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +19,7 @@ import java.util.Random;
  */
 
 @Component
-public class RandomAPI {
+public class RandomAPI extends  BaseApiCall{
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -43,19 +38,6 @@ public class RandomAPI {
     @Value("${bitcoin.url}")
     private String bitcoinUrl;
 
-    private JSONObject apiGetCall(String url, Map<String, String> header) throws InterruptedException {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        for (Map.Entry<String, String> entry : header.entrySet()) {
-            headers.add(entry.getKey(), entry.getValue());
-        }
-        HttpEntity<String> request = new HttpEntity<String>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
-        JSONObject jsonObject = new JSONObject(response);
-        String strBody = jsonObject.getString("body");
-        JSONObject jBody = new JSONObject(strBody);
-        return jBody;
-    }
 
     public String getSurprise() throws InterruptedException {
         Random generator = new Random();

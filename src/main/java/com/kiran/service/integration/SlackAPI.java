@@ -1,10 +1,14 @@
 package com.kiran.service.integration;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Kiran
@@ -12,25 +16,57 @@ import org.springframework.web.client.RestTemplate;
  */
 
 @Component
-public class SlackAPI {
-
+public class SlackAPI extends BaseApiCall{
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-     public void sendMessage(String message, String user) {
-         String URL = "https://hooks.slack.com/services/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";
-         String kiran_url = "https://hooks.slack.com/services/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";
-         String imageAdd = "https://cdn.pixabay.com/photo/2016/08/25/07/30/red-1618916_960_720.png";
-        try {
-            String payload = "{\"text\":\"" + message + "\",\"username\":\"" + user + "\",\"icon_url\":\"" + imageAdd + "\"}";
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<String> request = new HttpEntity<String>(payload,headers);
-            ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.POST, request, String.class);
-        } catch (Exception ex) {
-            this.logger.error("Exception during Jira API call. ExceptionMessage=\'{}\'. StackTrace=\'{}\'", ex.getMessage(), ex.getStackTrace());
+    @Value("${slack.url.private.channel}")
+    private String slackPrivateUrl;
+    @Value("${slack.url.public.channel}")
+    private String slackPublicUrl;
+    @Value("${slack.url.user.info}")
+    private String slackUserInfo;
+    @Value("${slack.token}")
+    private String slackToken;
+
+    public ArrayList getUsersFromPrivateGroup(String channelId) throws InterruptedException {
+        String token = "token="+ slackToken;
+        String channel = "&channel="+ channelId;
+        String url = slackPrivateUrl + token + channel;
+
+        Map<String, String> header = new HashMap<>();
+        JSONObject jBody = apiGetCall(url, header);
+        ArrayList userIds  = (ArrayList) jBody.getJSONObject("group").getJSONArray("members").toList();
+        ArrayList userNames = getUserName(userIds);
+        return userNames;
+    }
+
+    public ArrayList getUsersFromPublicGroup(String channelId) throws InterruptedException {
+        String token = "token="+ slackToken;
+        String channel = "&channel="+ channelId;
+        String url = slackPublicUrl + token + channel;
+
+        Map<String, String> header = new HashMap<>();
+        JSONObject jBody = apiGetCall(url, header);
+        ArrayList userIds  = (ArrayList) jBody.getJSONObject("channel").getJSONArray("members").toList();
+        ArrayList userNames = getUserName(userIds);
+        return userNames;
+    }
+
+
+    private ArrayList getUserName(ArrayList<String> userIds) throws InterruptedException {
+        ArrayList<String> users = new ArrayList<>();
+        for (String userId : userIds) {
+            String token = "token="+ slackToken;
+            String user = "&user="+ userId;
+            String url = slackUserInfo + token + user;
+
+            Map<String, String> header = new HashMap<>();
+            JSONObject jBody = apiGetCall(url, header);
+            String userName  =  jBody.getJSONObject("user").getJSONObject("profile").getString("display_name");
+            users.add(userName);
         }
+        return users;
     }
 
 }

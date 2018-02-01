@@ -83,4 +83,28 @@ public class Constant {
         return compliments[index];
     }
 
+    public static String getATeamCompliment() {
+        String[] compliments = {"Having you all on the team makes a huge difference. ",
+                "You guys always find a way to get it done — and done well!",
+                "This team's efforts at strengthening our culture are not unnoticed.",
+                "Fantastic work guys!",
+                "Even when the going gets tough, this team continues to have the best attitude!",
+                "I couldn’t imagine working without you guys!",
+                "There’s no other way to say it: we’d be lost without your team effort.",
+                "This team is so great to work with.",
+                "I am continually impressed by the results this team produces!",
+                "This team's work ethic is out of this world!",
+                "Is there anything this team can’t do?!",
+                "Keep up the great work guys, we will have a team happy hour soon!",
+                "What a great accomplishment.",
+                "You guys are awesome!",
+                "It’s incredible how often this team goes above and beyond.",
+                "I just wanted to let you know how much you all mean to the team.",
+                "This team plays a crucial role in our company’s success."};
+
+        Random random = new Random();
+        int index = random.nextInt(compliments.length);
+        return compliments[index];
+    }
+
 }
