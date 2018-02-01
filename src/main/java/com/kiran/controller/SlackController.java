@@ -12,6 +12,7 @@ import com.kiran.service.exception.InvalidMove;
 import com.kiran.service.integration.*;
 import com.kiran.service.utilities.Constant;
 import com.kiran.service.utilities.SlackAsyncService;
+import com.kiran.service.utilities.UserCache;
 import com.kiran.service.utilities.Utilities;
 import com.kiran.translator.RetroTranslator;
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +71,9 @@ public class SlackController {
 
     @Autowired
     private SlackAsyncService slackAsyncService;
+
+    @Autowired
+    private UserCache userCache;
 
 
     @Autowired
@@ -536,6 +540,7 @@ public class SlackController {
 
             String[] splited = text.split("\\s+");
             String receiverUserName = splited[0];
+
             int addNumber = 1;
             if (splited.length >= 2) {
                 if (StringUtils.isNumeric(splited[1])) {
@@ -544,12 +549,19 @@ public class SlackController {
             }
 
             if (receiverUserName.equalsIgnoreCase("@channel")) {
-                String channelId = formVars.get("channel_id").get(0);
-                slackAsyncService.updateDucks(channelId, addNumber);
-                String replayMessage = ">Congratulations, <@" + giverUserName + "> just gave `"+addNumber+"` :duck: to everyone here as a token of appreciation.\n" +
-                        "*" + Constant.getATeamCompliment() + "*";
-                SlackResponse response = new SlackResponse(replayMessage);
-                return new ResponseEntity<>(response, null, HttpStatus.OK);
+                if (userCache.getFromChannelPropCache(giverUserName).equalsIgnoreCase("empty")) {
+                    userCache.addToChannelPropCache(giverUserName, giverUserName);
+                    String channelId = formVars.get("channel_id").get(0);
+                    slackAsyncService.updateDucks(channelId, addNumber);
+                    String replayMessage = ">Congratulations, <@" + giverUserName + "> just gave `" + addNumber + "` :duck: to everyone here as a token of appreciation.\n" +
+                            "*" + Constant.getATeamCompliment() + "*";
+                    SlackResponse response = new SlackResponse(replayMessage);
+                    return new ResponseEntity<>(response, null, HttpStatus.OK);
+                } else {
+                    String replayMessage = "**";
+                    SlackResponse response = new SlackResponse(replayMessage);
+                    return new ResponseEntity<>(response, null, HttpStatus.OK);
+                }
             }
 
 
