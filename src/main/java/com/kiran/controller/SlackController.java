@@ -549,9 +549,11 @@ public class SlackController {
             }
 
             if (receiverUserName.equalsIgnoreCase("@channel")) {
-                if (userCache.getFromChannelPropCache(giverUserName).equalsIgnoreCase("empty")) {
-                    userCache.addToChannelPropCache(giverUserName, giverUserName);
-                    String channelId = formVars.get("channel_id").get(0);
+                String channelId = formVars.get("channel_id").get(0);
+                String cacheKey = giverUserName+channelId;
+                String cacheValue = userCache.getFromChannelPropCache(cacheKey);
+                if (cacheValue.equalsIgnoreCase("empty")) {
+                    userCache.addToChannelPropCache(cacheKey, cacheKey);
                     slackAsyncService.updateDucks(channelId, addNumber);
                     String replayMessage = ">Congratulations, <@" + giverUserName + "> just gave `" + addNumber + "` :duck: to everyone here as a token of appreciation.\n" +
                             "*" + Constant.getATeamCompliment() + "*";
